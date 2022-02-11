@@ -1,3 +1,8 @@
 # Nvim config
 
-Revisiting nvim settings while moving the config to Lua
+Revisiting my nvim settings while moving the config to Lua
+
+* reloading the config: `:source lua.vim`
+
+## Packer
+- run `:PackerCompile` after changing a plugin configuration
