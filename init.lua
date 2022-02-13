@@ -1,4 +1,4 @@
--- npm install prettier lua-fmt yaml-unist-parser
+-- sudo npm install -g prettier lua-fmt yaml-unist-parser
 -- pip3 install black isort
 -- cargo install taplo-cli
 
