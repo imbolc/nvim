@@ -424,12 +424,11 @@ return require("packer").startup(function(use)
 					}
 				end
 
-				if server.name == "texlab" then
-					config = require("lsp.servers.texlab").setup(config, on_attach)
-				end
-
 				if server.name == "html" then
-					config = require("lsp.servers.html").setup(config, on_attach)
+					config.on_attach = function(client, bufnr)
+						client.resolved_capabilities.document_formatting = false
+						on_attach(client, bufnr)
+					end
 				end
 
 				if server.name == "jsonls" then
