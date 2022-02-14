@@ -126,7 +126,7 @@ return require("packer").startup(function(use)
 			end
 			require("formatter").setup({
 				filetype = {
-					html = { prettier() },
+					html = { prettier("--tab-width", 4) },
 					json = { prettier() },
 					json5 = { prettier() },
 					yaml = { prettier() },
@@ -327,7 +327,6 @@ return require("packer").startup(function(use)
 		end,
 	})
 	use("L3MON4D3/LuaSnip")
-	use("RRethy/vim-illuminate")
 
 	--- LSP
 	use({
@@ -353,7 +352,6 @@ return require("packer").startup(function(use)
 				end
 
 				require("lsp_signature").on_attach(lspSignatureCfg)
-				require("illuminate").on_attach(client)
 
 				-- mappings.
 				local opts = { noremap = true, silent = true }
@@ -425,60 +423,12 @@ return require("packer").startup(function(use)
 					}
 				end
 
-				-- if server.name == "html" then
-				-- 	config.on_attach = function(client, bufnr)
-				-- 		client.resolved_capabilities.document_formatting = false
-				-- 		on_attach(client, bufnr)
-				-- 	end
-				-- end
-				--
-				-- if server.name == "jsonls" then
-				-- 	config.on_attach = function(client, bufnr)
-				-- 		client.resolved_capabilities.document_formatting = false
-				-- 		on_attach(client, bufnr)
-				-- 	end
-				-- 	config.settings = {
-				-- 		json = {
-				-- 			schemas = {
-				-- 				{
-				-- 					fileMatch = { "package.json" },
-				-- 					url = "https://json.schemastore.org/package.json",
-				-- 				},
-				-- 				{
-				-- 					fileMatch = { "tsconfig.json" },
-				-- 					url = "https://json.schemastore.org/tsconfig.json",
-				-- 				},
-				-- 				{
-				-- 					fileMatch = { ".prettierrc", ".prettierrc.json", ".prettierrc.config.json" },
-				-- 					url = "https://json.schemastore.org/prettierrc.json",
-				-- 				},
-				-- 				{
-				-- 					fileMatch = { ".eslintrc", ".eslintrc.json" },
-				-- 					url = "https://json.schemastore.org/eslintrc.json",
-				-- 				},
-				-- 			},
-				-- 		},
-				-- 	}
-				-- end
-				--
-				-- if server.name == "tsserver" then
-				-- 	config = require("lsp.servers.tsserver").setup(config, on_attach)
-				-- end
-				--
-				-- if server.name == "yamlls" then
-				-- 	config = require("lsp.servers.yamlls").setup(config, on_attach)
-				-- end
-				--
-				-- if server.name == "volar" then
-				-- 	config = require("lsp.servers.volar").setup(config, on_attach)
-				-- end
-				--
-				-- if server.name == "rust_analyzer" then
-				-- 	config.on_attach = function(client, bufnr)
-				-- 		client.resolved_capabilities.document_formatting = false
-				-- 		on_attach(client, bufnr)
-				-- 	end
-				-- end
+				if server.name == "rust_analyzer" then
+					config.on_attach = function(client, bufnr)
+						client.resolved_capabilities.document_formatting = false
+						on_attach(client, bufnr)
+					end
+				end
 
 				server:setup(config)
 				vim.cmd([[ do User LspAttachBuffers ]])
