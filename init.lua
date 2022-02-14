@@ -20,18 +20,14 @@ keymap("n", "k", "v:count == 0 ? 'gk' : 'k'", { noremap = true, expr = true, sil
 keymap("n", "j", "v:count == 0 ? 'gj' : 'j'", { noremap = true, expr = true, silent = true })
 
 -- Search
-vim.o.incsearch = true
-vim.o.hlsearch = false
 vim.o.ignorecase = true
 vim.o.smartcase = true
 
 -- Indentation
-vim.o.smarttab = true
 vim.o.tabstop = 4
 vim.o.softtabstop = 4
 vim.o.expandtab = true
 vim.o.shiftwidth = 4
-vim.o.autoindent = true
 
 -- Decrease update time
 vim.o.updatetime = 100
@@ -72,6 +68,25 @@ keymap("n", "<s-tab>", "gT", keyopts)
 -- don't lose selection when shifting
 keymap("x", "<", "<gv", keyopts)
 keymap("x", ">", ">gv", keyopts)
+
+-- Show command line only with filename in it
+vim.o.laststatus = 1
+vim.o.rulerformat = "%15(%=%l,%c %P%)"
+vim.api.nvim_exec([[
+    function! _get_commandline_filename()
+        let filename = @% =~ '^\/' ? @% : './' . @%
+        " window width - pressed keys place - ruller, so it fits into a line
+        let max = winwidth(0) - 11 - 16
+        if len(filename) > max
+            let filename = "<" . strcharpart(filename, len(filename) - max + 1)
+        endif
+        return filename
+    endfunction
+    augroup CmdLineFile
+        autocmd!
+        autocmd BufEnter * redraw! | echo _get_commandline_filename()
+    augroup END
+]], true)
 
 vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
 
