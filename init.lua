@@ -7,7 +7,18 @@ local keyopts = { noremap = true, silent = true }
 
 vim.g.mapleader = ","
 
-vim.o.cursorline = true
+vim.o.cursorline = true -- higlight cursor line
+vim.o.autowrite = true -- automatically :write before running a commands
+vim.o.spelllang = "ru,en"
+
+-- set shortmess+=c  " Avoid showing extra messages when using completion
+
+-- Set completeopt to have a better completion experience
+-- :help completeopt
+-- menuone: popup even when there's only one match
+-- noinsert: Do not insert text until a selection is made
+-- noselect: Do not select, force user to select one from the menu
+-- vim.o.completeopt = "menuone,noinsert,noselect"
 
 -- Line numbers
 vim.wo.number = true
@@ -22,6 +33,7 @@ keymap("n", "j", "v:count == 0 ? 'gj' : 'j'", { noremap = true, expr = true, sil
 -- Search
 vim.o.ignorecase = true
 vim.o.smartcase = true
+vim.o.inccommand = "split" -- preview substitutions
 
 -- Indentation
 vim.o.tabstop = 4
@@ -59,7 +71,7 @@ vim.o.termguicolors = true
 vim.o.background = "light"
 
 -- Set completeopt to have a better completion experience
-vim.o.completeopt = "menuone,noselect"
+-- vim.o.completeopt = "menuone,noselect"
 
 -- Switching between tabs by <tab> / <shift-tab>
 keymap("n", "<tab>", "gt", keyopts)
@@ -72,7 +84,8 @@ keymap("x", ">", ">gv", keyopts)
 -- Show command line only with filename in it
 vim.o.laststatus = 1
 vim.o.rulerformat = "%15(%=%l,%c %P%)"
-vim.api.nvim_exec([[
+vim.api.nvim_exec(
+	[[
     function! _get_commandline_filename()
         let filename = @% =~ '^\/' ? @% : './' . @%
         " window width - pressed keys place - ruller, so it fits into a line
@@ -86,7 +99,21 @@ vim.api.nvim_exec([[
         autocmd!
         autocmd BufEnter * redraw! | echo _get_commandline_filename()
     augroup END
-]], true)
+]],
+	true
+)
+
+-- Templates
+vim.api.nvim_exec(
+	[[
+    augroup templates
+        autocmd BufNewFile *.sh 0r ~/.vim/templates/skeleton.sh
+        autocmd BufNewFile *.vue 0r ~/.vim/templates/skeleton.vue
+        autocmd BufNewFile *.svelte 0r ~/.vim/templates/skeleton.svelte
+    augroup END
+]],
+	true
+)
 
 vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
 
