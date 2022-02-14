@@ -61,7 +61,6 @@ keymap("n", "q:", "<nop>", keyopts)
 -- Colorscheme
 vim.o.termguicolors = true
 vim.o.background = "light"
-vim.cmd([[colorscheme PaperColor]])
 
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = "menuone,noselect"
@@ -143,17 +142,22 @@ return require("packer").startup(function(use)
 			})
 			vim.api.nvim_exec(
 				[[
-                augroup FormatAutogroup
-                    autocmd!
-                    autocmd BufWritePost * silent! FormatWrite
-                augroup END
-                ]],
+            augroup FormatAutogroup
+            autocmd!
+            autocmd BufWritePost * silent! FormatWrite
+            augroup END
+            ]],
 				true
 			)
 		end,
 	})
 
-	use("NLKNguyen/papercolor-theme")
+	use({
+		"NLKNguyen/papercolor-theme",
+		config = function()
+			vim.cmd([[colorscheme PaperColor]])
+		end,
+	})
 
 	-- Telescope
 	use({
@@ -345,13 +349,13 @@ return require("packer").startup(function(use)
 			}
 			local on_attach = function(client, bufnr)
 				local function map(...)
-					vim.api.nvim_buf_set_map(bufnr, ...)
+					vim.api.nvim_buf_set_keymap(bufnr, ...)
 				end
 
 				require("lsp_signature").on_attach(lspSignatureCfg)
 				require("illuminate").on_attach(client)
 
-				-- Mappings.
+				-- mappings.
 				local opts = { noremap = true, silent = true }
 				map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
 				map("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
@@ -374,11 +378,11 @@ return require("packer").startup(function(use)
 				if client.resolved_capabilities.document_formatting then
 					map("n", "<space>f", ":lua vim.lsp.buf.formatting()<CR>", opts)
 					vim.cmd([[
-                                augroup lsp_format
-                                    autocmd! * <buffer>
-                                    autocmd BufWritePost <buffer> lua vim.lsp.buf.formatting_sync()
-                                augroup END
-                                ]])
+                    augroup lsp_format
+                    autocmd! * <buffer>
+                    autocmd BufWritePost <buffer> lua vim.lsp.buf.formatting_sync()
+                    augroup END
+                    ]])
 				elseif client.resolved_capabilities.document_range_formatting then
 					map("n", "<space>rf", ":lua vim.lsp.buf.range_formatting_sync()<CR>", opts)
 				end
@@ -393,13 +397,10 @@ return require("packer").startup(function(use)
 				}
 			end
 
-			local lsp_installer = require("nvim-lsp-installer")
-
-			lsp_installer.on_server_ready(function(server)
+			require("nvim-lsp-installer").on_server_ready(function(server)
 				local config = make_config()
 
 				if server.name == "sumneko_lua" then
-					-- config = require("lsp.servers.sumneko_lua").setup(config, on_attach)
 					local runtime_path = vim.split(package.path, ";")
 					table.insert(runtime_path, "lua/?.lua")
 					table.insert(runtime_path, "lua/?/init.lua")
@@ -424,32 +425,60 @@ return require("packer").startup(function(use)
 					}
 				end
 
-				if server.name == "html" then
-					config.on_attach = function(client, bufnr)
-						client.resolved_capabilities.document_formatting = false
-						on_attach(client, bufnr)
-					end
-				end
-
-				if server.name == "jsonls" then
-					config = require("lsp.servers.jsonls").setup(config, on_attach)
-				end
-
-				if server.name == "tsserver" then
-					config = require("lsp.servers.tsserver").setup(config, on_attach)
-				end
-
-				if server.name == "yamlls" then
-					config = require("lsp.servers.yamlls").setup(config, on_attach)
-				end
-
-				if server.name == "volar" then
-					config = require("lsp.servers.volar").setup(config, on_attach)
-				end
-
-				if server.name == "rust_analyzer" then
-					config = require("lsp.servers.rust_analyzer").setup(config, on_attach)
-				end
+				-- if server.name == "html" then
+				-- 	config.on_attach = function(client, bufnr)
+				-- 		client.resolved_capabilities.document_formatting = false
+				-- 		on_attach(client, bufnr)
+				-- 	end
+				-- end
+				--
+				-- if server.name == "jsonls" then
+				-- 	config.on_attach = function(client, bufnr)
+				-- 		client.resolved_capabilities.document_formatting = false
+				-- 		on_attach(client, bufnr)
+				-- 	end
+				-- 	config.settings = {
+				-- 		json = {
+				-- 			schemas = {
+				-- 				{
+				-- 					fileMatch = { "package.json" },
+				-- 					url = "https://json.schemastore.org/package.json",
+				-- 				},
+				-- 				{
+				-- 					fileMatch = { "tsconfig.json" },
+				-- 					url = "https://json.schemastore.org/tsconfig.json",
+				-- 				},
+				-- 				{
+				-- 					fileMatch = { ".prettierrc", ".prettierrc.json", ".prettierrc.config.json" },
+				-- 					url = "https://json.schemastore.org/prettierrc.json",
+				-- 				},
+				-- 				{
+				-- 					fileMatch = { ".eslintrc", ".eslintrc.json" },
+				-- 					url = "https://json.schemastore.org/eslintrc.json",
+				-- 				},
+				-- 			},
+				-- 		},
+				-- 	}
+				-- end
+				--
+				-- if server.name == "tsserver" then
+				-- 	config = require("lsp.servers.tsserver").setup(config, on_attach)
+				-- end
+				--
+				-- if server.name == "yamlls" then
+				-- 	config = require("lsp.servers.yamlls").setup(config, on_attach)
+				-- end
+				--
+				-- if server.name == "volar" then
+				-- 	config = require("lsp.servers.volar").setup(config, on_attach)
+				-- end
+				--
+				-- if server.name == "rust_analyzer" then
+				-- 	config.on_attach = function(client, bufnr)
+				-- 		client.resolved_capabilities.document_formatting = false
+				-- 		on_attach(client, bufnr)
+				-- 	end
+				-- end
 
 				server:setup(config)
 				vim.cmd([[ do User LspAttachBuffers ]])
@@ -465,4 +494,12 @@ return require("packer").startup(function(use)
 	if PACKER_BOOTSTRAP then
 		require("packer").sync()
 	end
+
+	-- Automatically recompile plugins, on the init file change
+	vim.cmd([[
+    augroup packer_user_config
+    autocmd!
+    autocmd BufWritePost init.lua source <afile> | PackerCompile
+    augroup end
+    ]])
 end)
