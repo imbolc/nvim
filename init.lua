@@ -277,7 +277,7 @@ return require("packer").startup(function(use)
 				mapping = {
 					["<Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
-							cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+							cmp.select_next_item()
 						elseif ls.expand_or_locally_jumpable() then
 							ls.expand_or_jump()
 						elseif has_words_before() then
@@ -291,7 +291,7 @@ return require("packer").startup(function(use)
 					}),
 					["<S-Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
-							cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+							cmp.select_prev_item()
 						elseif ls.jumpable(-1) then
 							ls.jump(-1)
 						else
@@ -302,7 +302,10 @@ return require("packer").startup(function(use)
 						"s",
 					}),
 					["<C-Space>"] = cmp.mapping.complete(),
-					["<ESC>"] = cmp.mapping.close(),
+					["<ESC>"] = cmp.mapping(function(fallback)
+						cmp.close()
+						fallback()
+					end),
 					["<CR>"] = cmp.mapping.confirm({
 						behavior = cmp.ConfirmBehavior.Insert,
 						select = true,
@@ -317,7 +320,7 @@ return require("packer").startup(function(use)
 					{ name = "calc" },
 				},
 				completion = {
-					completeopt = "menu,menuone",
+					completeopt = "menu,menuone,noselect",
 				},
 				formatting = {
 					format = require("lspkind").cmp_format({
