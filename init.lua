@@ -109,7 +109,6 @@ vim.api.nvim_exec(
 	true
 )
 
-
 -- Install packer
 local install_path = vim.fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
@@ -126,22 +125,20 @@ end
 return require("packer").startup(function(use)
 	use("wbthomason/packer.nvim")
 
+	-- Json5
+	use("GutenYe/json5.vim")
+	vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
 
-    -- Json5
-    use("GutenYe/json5.vim")
-    vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
+	-- Ranger
+	use("kevinhwang91/rnvimr")
+	keymap("n", "<leader>t", ":RnvimrToggle<cr>", keyopts)
+	vim.g.rnvimr_enable_ex = 1
+	vim.g.rnvimr_enable_picker = 1
+	vim.g.rnvimr_action = { ["<cr>"] = "NvimEdit tabedit" }
 
-    -- Ranger
-    use("kevinhwang91/rnvimr")
-    keymap("n", "<leader>t", ":RnvimrToggle<cr>", keyopts)
-    vim.g.rnvimr_enable_ex = 1
-    vim.g.rnvimr_enable_picker = 1
-    vim.g.rnvimr_action = { ["<cr>"] = 'NvimEdit tabedit' }
-
-    -- Rust
-    use 'rust-lang/rust.vim'
-	vim.cmd([[au FileType sql map <buffer> <leader>r :w\|!rust-script %<cr>]])
-
+	-- Rust
+	use("rust-lang/rust.vim")
+	vim.cmd([[au FileType rust map <buffer> <leader>r :w\|!rust-script %<cr>]])
 
 	use({
 		"numToStr/Comment.nvim",
@@ -194,7 +191,7 @@ return require("packer").startup(function(use)
 					python = { exe_args_stdin("isort", "--profile", "black", "-"), exe_args_stdin("black", "-") },
 				},
 			})
-                -- autocmd BufWritePost *.rs,*.py,*.html,*.lua FormatWrite
+			-- autocmd BufWritePost *.rs,*.py,*.html,*.lua FormatWrite
 			vim.api.nvim_exec(
 				[[
                 augroup FormatAutogroup
