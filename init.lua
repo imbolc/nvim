@@ -13,13 +13,6 @@ vim.o.spelllang = "ru,en"
 
 -- set shortmess+=c  " Avoid showing extra messages when using completion
 
--- Set completeopt to have a better completion experience
--- :help completeopt
--- menuone: popup even when there's only one match
--- noinsert: Do not insert text until a selection is made
--- noselect: Do not select, force user to select one from the menu
--- vim.o.completeopt = "menuone,noinsert,noselect"
-
 -- Line numbers
 vim.wo.number = true
 vim.wo.relativenumber = true
@@ -30,10 +23,11 @@ vim.o.breakindent = true
 keymap("n", "k", "v:count == 0 ? 'gk' : 'k'", { noremap = true, expr = true, silent = true })
 keymap("n", "j", "v:count == 0 ? 'gj' : 'j'", { noremap = true, expr = true, silent = true })
 
--- Search
+-- Search / substitute
 vim.o.ignorecase = true
 vim.o.smartcase = true
 vim.o.inccommand = "split" -- preview substitutions
+vim.o.gdefault = true
 
 -- Indentation
 vim.o.tabstop = 4
@@ -198,6 +192,17 @@ return require("packer").startup(function(use)
 		"NLKNguyen/papercolor-theme",
 		config = function()
 			vim.cmd([[colorscheme PaperColor]])
+		end,
+	})
+
+	-- Show version updates in `Cargo.toml`
+	use({
+		"saecki/crates.nvim",
+		tag = "v0.1.0",
+		event = { "BufRead Cargo.toml" },
+		requires = { "nvim-lua/plenary.nvim" },
+		config = function()
+			require("crates").setup()
 		end,
 	})
 
@@ -371,6 +376,7 @@ return require("packer").startup(function(use)
 			})
 		end,
 	})
+	vim.cmd("autocmd FileType toml lua require('cmp').setup.buffer { sources = { { name = 'crates' } } }")
 	use("L3MON4D3/LuaSnip")
 
 	--- LSP
