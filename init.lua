@@ -1,6 +1,6 @@
 -- sudo npm install -g prettier lua-fmt yaml-unist-parser
 -- pip3 install black isort
--- cargo install taplo-cli stylua
+-- cargo install taplo-cli stylua comrak
 
 local keymap = vim.api.nvim_set_keymap
 local keyopts = { noremap = true, silent = true }
@@ -376,8 +376,23 @@ return require("packer").startup(function(use)
 			})
 		end,
 	})
-	vim.cmd("autocmd FileType toml lua require('cmp').setup.buffer { sources = { { name = 'crates' } } }")
+	vim.cmd("au FileType toml lua require('cmp').setup.buffer { sources = { { name = 'crates' } } }")
 	use("L3MON4D3/LuaSnip")
+
+	use("editorconfig/editorconfig-vim")
+	use("evanleck/vim-svelte")
+
+	--- Postgres
+	vim.cmd([[au FileType sql map <buffer> <leader>r :w\|!psql -f %<cr>]])
+
+	--- Markdown
+	vim.cmd([[
+    au FileType markdown setlocal wrap
+    au FileType markdown setlocal spell
+    au FileType markdown setlocal conceallevel=2
+    au FileType markdown vnoremap g gq
+    au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
+    ]])
 
 	--- LSP
 	use({
