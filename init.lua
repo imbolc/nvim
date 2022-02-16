@@ -1,13 +1,13 @@
 -- sudo npm install -g prettier lua-fmt yaml-unist-parser
--- pip3 install black isort
--- cargo install taplo-cli stylua comrak
+-- pip3 install black isort ueberzug
+-- cargo install taplo-cli stylua comrak rust-script
 
 local keymap = vim.api.nvim_set_keymap
 local keyopts = { noremap = true, silent = true }
 
 vim.g.mapleader = ","
 
-vim.o.cursorline = true -- higlight cursor line
+-- vim.o.cursorline = true -- higlight cursor line
 vim.o.autowrite = true -- automatically :write before running a commands
 vim.o.spelllang = "ru,en"
 
@@ -109,7 +109,6 @@ vim.api.nvim_exec(
 	true
 )
 
-vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
 
 -- Install packer
 local install_path = vim.fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
@@ -127,12 +126,31 @@ end
 return require("packer").startup(function(use)
 	use("wbthomason/packer.nvim")
 
+
+    -- Json5
+    use("GutenYe/json5.vim")
+    vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
+
+    -- Ranger
+    use("kevinhwang91/rnvimr")
+    keymap("n", "<leader>t", ":RnvimrToggle<cr>", keyopts)
+    vim.g.rnvimr_enable_ex = 1
+    vim.g.rnvimr_enable_picker = 1
+    vim.g.rnvimr_action = { ["<cr>"] = 'NvimEdit tabedit' }
+
+    -- Rust
+    use 'rust-lang/rust.vim'
+	vim.cmd([[au FileType sql map <buffer> <leader>r :w\|!rust-script %<cr>]])
+
+
 	use({
 		"numToStr/Comment.nvim",
 		config = function()
 			require("Comment").setup()
 		end,
 	})
+
+	use("junegunn/vim-slash") -- automatically remove search selection
 
 	use({
 		"mhartington/formatter.nvim",
@@ -171,18 +189,19 @@ return require("packer").startup(function(use)
 					markdown = { prettier() },
 					javascript = { prettier("--tab-width", 4) },
 					lua = { exe_args_stdin("stylua", "-") },
-					rust = { exe_args_stdin("rustfmt") },
+					rust = { exe_args_stdin("rustfmt", "--emit", "stdout") },
 					toml = { exe_args_stdin("taplo", "fmt", "-") },
 					python = { exe_args_stdin("isort", "--profile", "black", "-"), exe_args_stdin("black", "-") },
 				},
 			})
+                -- autocmd BufWritePost *.rs,*.py,*.html,*.lua FormatWrite
 			vim.api.nvim_exec(
 				[[
-            augroup FormatAutogroup
-            autocmd!
-            autocmd BufWritePost * silent! FormatWrite
-            augroup END
-            ]],
+                augroup FormatAutogroup
+                autocmd!
+                autocmd BufWritePost * silent! FormatWrite
+                augroup END
+                ]],
 				true
 			)
 		end,
@@ -194,6 +213,7 @@ return require("packer").startup(function(use)
 			vim.cmd([[colorscheme PaperColor]])
 		end,
 	})
+	use("clinstid/eink.vim")
 
 	-- Show version updates in `Cargo.toml`
 	use({
@@ -393,6 +413,15 @@ return require("packer").startup(function(use)
     au FileType markdown vnoremap g gq
     au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
     ]])
+
+	--- Yaml
+	vim.cmd([[
+    au FileType yaml setlocal wrap
+    au FileType yaml setlocal spell
+    ]])
+
+	--- Vue
+	use("posva/vim-vue")
 
 	--- LSP
 	use({
