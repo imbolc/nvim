@@ -144,18 +144,16 @@ return require("packer").startup(function(use)
 	use("dhruvasagar/vim-table-mode")
 	vim.g.table_mode_corner = "|" -- markdown-compatible corners
 
+	-- CSV
+	use("mechatroner/rainbow_csv")
 
-    -- CSV
-    use 'mechatroner/rainbow_csv'
+	-- Auto paste mode
+	use("ConradIrwin/vim-bracketed-paste")
 
+	-- Tmux splits integration
+	use("christoomey/vim-tmux-navigator")
 
-    -- Auto paste mode
-    use 'ConradIrwin/vim-bracketed-paste'
-
-    -- Tmux splits integration
-    use 'christoomey/vim-tmux-navigator'
-
-    -- Bash
+	-- Bash
 	vim.cmd([[au FileType rust sh <buffer> <leader>r :w\|!bash %<cr>]])
 
 	use({
@@ -166,7 +164,10 @@ return require("packer").startup(function(use)
 	})
 
 	use("junegunn/vim-slash") -- automatically remove search selection
-	use("powerman/vim-plugin-ruscmd") -- russian symbols in commands
+
+	-- install https://github.com/grwlf/xkb-switch
+	use("lyokha/vim-xkbswitch") -- automatically switch layout back leaving insert mode
+	vim.g.XkbSwitchEnabled = 1
 
 	use({
 		"mhartington/formatter.nvim",
@@ -253,10 +254,16 @@ return require("packer").startup(function(use)
 		},
 		config = function()
 			local telescope = require("telescope")
+			local actions = require("telescope.actions")
 
 			telescope.setup({
 				defaults = {
 					file_ignore_patterns = { ".git", "node_modules" },
+					mappings = {
+						i = {
+							["<cr>"] = actions.select_tab,
+						},
+					},
 				},
 				extensions = {
 					fzf = {
@@ -273,6 +280,7 @@ return require("packer").startup(function(use)
 	})
 	use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
 	use("nvim-telescope/telescope-packer.nvim")
+	keymap("n", "<leader>f", "<cmd>lua require('telescope.builtin').find_files()<cr>", keyopts)
 
 	--- Autocompletion
 	use({
