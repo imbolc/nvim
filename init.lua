@@ -140,6 +140,24 @@ return require("packer").startup(function(use)
 	use("rust-lang/rust.vim")
 	vim.cmd([[au FileType rust map <buffer> <leader>r :w\|!rust-script %<cr>]])
 
+	-- Tables
+	use("dhruvasagar/vim-table-mode")
+	vim.g.table_mode_corner = "|" -- markdown-compatible corners
+
+
+    -- CSV
+    use 'mechatroner/rainbow_csv'
+
+
+    -- Auto paste mode
+    use 'ConradIrwin/vim-bracketed-paste'
+
+    -- Tmux splits integration
+    use 'christoomey/vim-tmux-navigator'
+
+    -- Bash
+	vim.cmd([[au FileType rust sh <buffer> <leader>r :w\|!bash %<cr>]])
+
 	use({
 		"numToStr/Comment.nvim",
 		config = function()
@@ -148,6 +166,7 @@ return require("packer").startup(function(use)
 	})
 
 	use("junegunn/vim-slash") -- automatically remove search selection
+	use("powerman/vim-plugin-ruscmd") -- russian symbols in commands
 
 	use({
 		"mhartington/formatter.nvim",
