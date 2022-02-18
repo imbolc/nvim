@@ -154,7 +154,7 @@ return require("packer").startup(function(use)
 	use("christoomey/vim-tmux-navigator")
 
 	-- Bash
-	vim.cmd([[au FileType rust sh <buffer> <leader>r :w\|!bash %<cr>]])
+	vim.cmd([[au FileType sh map <buffer> <leader>r :w\|!bash %<cr>]])
 
 	use({
 		"numToStr/Comment.nvim",
@@ -206,7 +206,7 @@ return require("packer").startup(function(use)
 					markdown = { prettier() },
 					javascript = { prettier("--tab-width", 4) },
 					lua = { exe_args_stdin("stylua", "-") },
-					rust = { exe_args_stdin("rustfmt", "--emit", "stdout") },
+					rust = { exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021") },
 					toml = { exe_args_stdin("taplo", "fmt", "-") },
 					python = { exe_args_stdin("isort", "--profile", "black", "-"), exe_args_stdin("black", "-") },
 				},
