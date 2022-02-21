@@ -549,6 +549,22 @@ return require("packer").startup(function(use)
 					end
 				end
 
+				if server.name == "pylsp" then
+					config.on_attach = function(client, bufnr)
+						client.resolved_capabilities.document_formatting = false
+						on_attach(client, bufnr)
+						config.settings = {
+							pylsp = {
+								-- configurationSources = { "flake8" },
+								plugins = {
+									-- TODO ignoring doesn't work, not here nor in `.flake8` config
+									flake8 = { ignore = { "E203" } },
+								},
+							},
+						}
+					end
+				end
+
 				server:setup(config)
 				vim.cmd([[ do User LspAttachBuffers ]])
 			end)
