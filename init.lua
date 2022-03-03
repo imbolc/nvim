@@ -197,7 +197,7 @@ return require("packer").startup(function(use)
 			end
 			require("formatter").setup({
 				filetype = {
-					html = { prettier("--tab-width", 4) },
+					-- html = { prettier("--tab-width", 4) }, -- doesn't work with jinja
 					json = { prettier() },
 					json5 = { prettier() },
 					yaml = { prettier() },
@@ -446,6 +446,21 @@ return require("packer").startup(function(use)
 
 	--- Vue
 	use("posva/vim-vue")
+
+	--- Jinja
+	use("Glench/Vim-Jinja2-Syntax")
+
+	--- Distraction free writing
+	use({
+		"folke/zen-mode.nvim",
+		config = function()
+			require("zen-mode").setup({
+				window = {
+					width = 80,
+				},
+			})
+		end,
+	})
 
 	--- LSP
 	use({
