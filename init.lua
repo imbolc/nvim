@@ -203,7 +203,8 @@ return require("packer").startup(function(use)
 					yaml = { prettier() },
 					css = { prettier() },
 					vue = { prettier() },
-					markdown = { prettier() },
+					svelte = { prettier() },
+					-- markdown = { prettier() },
 					javascript = { prettier("--tab-width", 4) },
 					lua = { exe_args_stdin("stylua", "-") },
 					rust = { exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021") },
@@ -268,8 +269,8 @@ return require("packer").startup(function(use)
 				extensions = {
 					fzf = {
 						fuzzy = true,
-						override_generic_sorter = true,
-						override_file_sorter = true,
+						-- override_generic_sorter = true,
+						-- override_file_sorter = true,
 					},
 				},
 			})
@@ -280,7 +281,16 @@ return require("packer").startup(function(use)
 	})
 	use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
 	use("nvim-telescope/telescope-packer.nvim")
+
 	keymap("n", "<leader>f", "<cmd>lua require('telescope.builtin').find_files()<cr>", keyopts)
+	keymap("n", "<leader>g", "<cmd>lua require('telescope.builtin').live_grep()<cr>", keyopts)
+	keymap(
+		"n",
+		"<leader>n",
+		"<cmd>lua require('telescope.builtin').find_files{search_dirs={'~/Documents/scroll'}}<cr>",
+		-- "<cmd>lua require('telescope.builtin').live_grep{search_dirs={'~/Documents/scroll'}}<cr>",
+		keyopts
+	)
 
 	--- Autocompletion
 	use({
@@ -425,6 +435,12 @@ return require("packer").startup(function(use)
 
 	use("editorconfig/editorconfig-vim")
 	use("evanleck/vim-svelte")
+
+	--- Grep and replacement in multiple files: lua require('spectre').open()
+	use({
+		"windwp/nvim-spectre",
+		requires = { "nvim-lua/plenary.nvim" },
+	})
 
 	--- Postgres
 	vim.cmd([[au FileType sql map <buffer> <leader>r :w\|!psql -f %<cr>]])
