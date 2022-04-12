@@ -125,16 +125,20 @@ end
 return require("packer").startup(function(use)
 	use("wbthomason/packer.nvim")
 
+	-- Treesitter
+	use({ "/nvim-treesitter/nvim-treesitter", run = ":TSUpdate" })
+
 	-- Json5
 	use("GutenYe/json5.vim")
 	vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
 
 	-- Ranger
-	use("kevinhwang91/rnvimr")
-	keymap("n", "<leader>t", ":RnvimrToggle<cr>", keyopts)
+	use({ "kevinhwang91/rnvimr", run = "pip3 install ranger-fm pynvim ueberzug" })
 	vim.g.rnvimr_enable_ex = 1
 	vim.g.rnvimr_enable_picker = 1
 	vim.g.rnvimr_action = { ["<cr>"] = "NvimEdit tabedit" }
+	keymap("n", "<leader>t", ":RnvimrToggle<cr>", keyopts)
+	keymap("n", "<leader>nc", ":e ~/Documents/scroll<cr>", keyopts)
 
 	-- Rust
 	use("rust-lang/rust.vim")
