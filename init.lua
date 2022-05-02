@@ -126,7 +126,7 @@ return require("packer").startup(function(use)
 	use("wbthomason/packer.nvim")
 
 	-- Treesitter
-	use({ "/nvim-treesitter/nvim-treesitter", run = ":TSUpdate" })
+	use({ "nvim-treesitter/nvim-treesitter", run = ":TSUpdate" })
 
 	-- Json5
 	use("GutenYe/json5.vim")
@@ -470,6 +470,10 @@ return require("packer").startup(function(use)
 	--- Jinja
 	use("Glench/Vim-Jinja2-Syntax")
 
+	--- Sailfish
+	vim.cmd("luafile ~/.config/nvim/plugin/packer_compiled.lua")  -- packer `rtp` doesn't work without this
+	use({ "rust-sailfish/sailfish", rtp = "syntax/vim" })
+
 	--- Distraction free writing
 	use({
 		"folke/zen-mode.nvim",
@@ -509,18 +513,18 @@ return require("packer").startup(function(use)
 
 				-- mappings.
 				local opts = { noremap = true, silent = true }
-				map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
-				map("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
 				map("n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>", opts)
 				map("n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", opts)
-				map("n", "<space>k", "<cmd>lua vim.lsp.buf.signature_help()<CR>", opts)
-				map("n", "<space>wa", "<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>", opts)
-				map("n", "<space>wr", "<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>", opts)
-				map("n", "<space>wl", "<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>", opts)
-				map("n", "<space>D", "<cmd>lua vim.lsp.buf.type_definition()<CR>", opts)
+				map("n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>", opts)
+				map("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
+				-- map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
+				-- map("n", "<space>k", "<cmd>lua vim.lsp.buf.signature_help()<CR>", opts)
+				-- map("n", "<space>wa", "<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>", opts)
+				-- map("n", "<space>wr", "<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>", opts)
+				-- map("n", "<space>wl", "<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>", opts)
+				-- map("n", "<space>D", "<cmd>lua vim.lsp.buf.type_definition()<CR>", opts)
 				map("n", "<space>ca", "<cmd>lua vim.lsp.buf.code_action()<CR>", opts)
 				map("n", "<space>rn", "<cmd>lua vim.lsp.buf.rename()<CR>", opts)
-				map("n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>", opts)
 				map("n", "<space>e", "<cmd>lua vim.diagnostic.open_float()<CR>", opts)
 				map("n", "[d", "<cmd>lua vim.diagnostic.goto_prev()<CR>", opts)
 				map("n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>", opts)
