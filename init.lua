@@ -209,7 +209,7 @@ return require("packer").startup(function(use)
 					vue = { prettier() },
 					svelte = { prettier() },
 					-- markdown = { prettier() },
-					javascript = { prettier("--tab-width", 4) },
+					javascript = { prettier() },
 					lua = { exe_args_stdin("stylua", "-") },
 					rust = { exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021") },
 					toml = { exe_args_stdin("taplo", "fmt", "-") },
@@ -369,10 +369,10 @@ return require("packer").startup(function(use)
 						cmp.close()
 						fallback()
 					end),
-					["<CR>"] = cmp.mapping.confirm({
-						behavior = cmp.ConfirmBehavior.Insert,
-						select = true,
-					}),
+					-- ["<CR>"] = cmp.mapping.confirm({
+					-- 	behavior = cmp.ConfirmBehavior.Insert,
+					-- 	select = true,
+					-- }),
 				},
 				sources = {
 					{ name = "nvim_lsp" },
