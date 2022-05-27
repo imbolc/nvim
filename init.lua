@@ -126,7 +126,42 @@ return require("packer").startup(function(use)
 	use("wbthomason/packer.nvim")
 
 	-- Treesitter
-	use({ "nvim-treesitter/nvim-treesitter", run = ":TSUpdate" })
+	use({
+		"nvim-treesitter/nvim-treesitter",
+		run = ":TSUpdate",
+		config = function()
+			require("nvim-treesitter.configs").setup({
+				ensure_installed = {
+					"bash",
+					"comment",
+					"css",
+					"html",
+					"javascript",
+					"json",
+					"json5",
+					"lua",
+					"python",
+					"rust",
+					"svelte",
+					"toml",
+					"typescript",
+					"vue",
+					"yaml",
+				},
+				highlight = {
+					enable = true,
+					-- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+					-- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
+					-- Using this option may slow down your editor, and you may see some duplicate highlights.
+					-- Instead of true it can also be a list of languages
+					additional_vim_regex_highlighting = false,
+				},
+				indent = {
+					enable = true,
+				},
+			})
+		end,
+	})
 
 	-- Json5
 	use("GutenYe/json5.vim")
@@ -138,14 +173,14 @@ return require("packer").startup(function(use)
 	vim.g.rnvimr_enable_picker = 1
 	keymap("n", "<leader>t", ":RnvimrToggle<cr>", keyopts)
 	keymap("n", "<leader>nc", ":e ~/Documents/scroll<cr>", keyopts)
-    vim.g.rnvimr_action = {
-        ["<cr>"] = "NvimEdit tabedit",
-        ["<C-t>"]= "NvimEdit tabedit",
-        ["<C-x>"]= "NvimEdit split",
-        ["<C-v>"]= "NvimEdit vsplit",
-        ["gw"]= "JumpNvimCwd",
-        ["yw"]= "EmitRangerCwd",
-    }
+	vim.g.rnvimr_action = {
+		["<cr>"] = "NvimEdit tabedit",
+		["<C-t>"] = "NvimEdit tabedit",
+		["<C-x>"] = "NvimEdit split",
+		["<C-v>"] = "NvimEdit vsplit",
+		["gw"] = "JumpNvimCwd",
+		["yw"] = "EmitRangerCwd",
+	}
 
 	-- Rust
 	use("rust-lang/rust.vim")
@@ -167,6 +202,11 @@ return require("packer").startup(function(use)
 	-- Bash
 	vim.cmd([[au FileType sh map <buffer> <leader>r :w\|!bash %<cr>]])
 
+	-- Commenting
+	use({
+		"JoosepAlviste/nvim-ts-context-commentstring",
+		requires = "nvim-treesitter/nvim-treesitter",
+	})
 	use({
 		"numToStr/Comment.nvim",
 		config = function()
@@ -478,7 +518,7 @@ return require("packer").startup(function(use)
 	use("Glench/Vim-Jinja2-Syntax")
 
 	--- Sailfish
-	vim.cmd("luafile ~/.config/nvim/plugin/packer_compiled.lua")  -- packer `rtp` doesn't work without this
+	vim.cmd("luafile ~/.config/nvim/plugin/packer_compiled.lua") -- packer `rtp` doesn't work without this
 	use({ "rust-sailfish/sailfish", rtp = "syntax/vim" })
 
 	--- Distraction free writing

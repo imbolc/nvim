@@ -1,15 +1,12 @@
 # Nvim config
 
-Revisiting my nvim settings while moving the config to Lua
-
-- reloading the config: `:source lua.vim`
-
 ## Packer
 
 - install plugins and exit: `nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'`
 
 ## TODO
 
+- Autocomplete should work with lowercase, e.g. `:colorscheme pap<tab>` should select `PaperColor`
 - https://github.com/nvim-treesitter/nvim-treesitter#quickstart
     daf - delete outside function
     [m - move to the next method
