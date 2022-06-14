@@ -140,6 +140,7 @@ return require("packer").startup(function(use)
 					"json",
 					"json5",
 					"lua",
+                    "markdown",
 					"python",
 					"rust",
 					"svelte",
@@ -147,6 +148,7 @@ return require("packer").startup(function(use)
 					"typescript",
 					"vue",
 					"yaml",
+
 				},
 				highlight = {
 					enable = true,
@@ -211,6 +213,8 @@ return require("packer").startup(function(use)
 		"numToStr/Comment.nvim",
 		config = function()
 			require("Comment").setup()
+			local ft = require("Comment.ft")
+			ft.sailfish = "<%#%s%>"
 		end,
 	})
 
@@ -497,6 +501,12 @@ return require("packer").startup(function(use)
 	vim.cmd([[au FileType sql map <buffer> <leader>r :w\|!psql -f %<cr>]])
 
 	--- Markdown
+	use({
+        "preservim/vim-markdown",
+        config = function ()
+            vim.g.vim_markdown_folding_disabled = 1
+        end
+    })
 	vim.cmd([[
     au FileType markdown setlocal wrap
     au FileType markdown setlocal spell
