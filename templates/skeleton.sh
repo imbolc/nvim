@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 
-set -o nounset  # error when referencing undefined variable
-set -o errexit  # exit when command fails
+set -e  # exit if a command fails
+set -u  # error when referencing undefined variable
+set -x  # print executed commands

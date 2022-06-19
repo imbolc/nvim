@@ -101,9 +101,9 @@ vim.api.nvim_exec(
 vim.api.nvim_exec(
 	[[
     augroup templates
-        autocmd BufNewFile *.sh 0r ~/.vim/templates/skeleton.sh
-        autocmd BufNewFile *.vue 0r ~/.vim/templates/skeleton.vue
-        autocmd BufNewFile *.svelte 0r ~/.vim/templates/skeleton.svelte
+        autocmd BufNewFile *.sh 0r ~/.config/nvim/templates/skeleton.sh
+        autocmd BufNewFile *.vue 0r ~/.config/nvim/templates/skeleton.vue
+        autocmd BufNewFile *.svelte 0r ~/.config/nvim/templates/skeleton.svelte
     augroup END
 ]],
 	true
