@@ -174,7 +174,7 @@ return require("packer").startup(function(use)
 	vim.g.rnvimr_enable_ex = 1
 	vim.g.rnvimr_enable_picker = 1
 	keymap("n", "<leader>t", ":RnvimrToggle<cr>", keyopts)
-	keymap("n", "<leader>nc", ":e ~/Documents/scroll<cr>", keyopts)
+	keymap("n", "<leader>nc", ":e ~/Documents/scroll/data<cr>", keyopts)
 	vim.g.rnvimr_action = {
 		["<cr>"] = "NvimEdit tabedit",
 		["<C-t>"] = "NvimEdit tabedit",
@@ -342,8 +342,8 @@ return require("packer").startup(function(use)
 	keymap(
 		"n",
 		"<leader>n",
-		"<cmd>lua require('telescope.builtin').find_files{search_dirs={'~/Documents/scroll'}}<cr>",
-		-- "<cmd>lua require('telescope.builtin').live_grep{search_dirs={'~/Documents/scroll'}}<cr>",
+		"<cmd>lua require('telescope.builtin').find_files{search_dirs={'~/Documents/scroll/data'}}<cr>",
+		-- "<cmd>lua require('telescope.builtin').live_grep{search_dirs={'~/Documents/scroll/data'}}<cr>",
 		keyopts
 	)
 
