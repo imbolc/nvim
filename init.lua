@@ -18,7 +18,9 @@ vim.wo.number = true
 vim.wo.relativenumber = true
 
 -- Wrapping
-vim.o.wrap = false
+vim.o.wrap = false  -- disable soft wrapping at the edge of the screen
+vim.o.textwidth = 0  -- disable hard wrapping
+vim.o.linebreak = true  -- do not wrap in the middle of a word when soft wrapping is enabled
 vim.o.breakindent = true
 keymap("n", "k", "v:count == 0 ? 'gk' : 'k'", { noremap = true, expr = true, silent = true })
 keymap("n", "j", "v:count == 0 ? 'gj' : 'j'", { noremap = true, expr = true, silent = true })
