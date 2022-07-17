@@ -13,9 +13,14 @@ vim.o.spelllang = "ru,en"
 
 -- set shortmess+=c  " Avoid showing extra messages when using completion
 
+-- Backup
+vim.o.backup = false
+vim.o.swapfile = false
+
 -- Line numbers
 vim.wo.number = true
 vim.wo.relativenumber = true
+vim.o.signcolumn = "number"  -- show error markers in the number column
 
 -- Wrapping
 vim.o.wrap = false  -- disable soft wrapping at the edge of the screen
@@ -24,6 +29,8 @@ vim.o.linebreak = true  -- do not wrap in the middle of a word when soft wrappin
 vim.o.breakindent = true
 keymap("n", "k", "v:count == 0 ? 'gk' : 'k'", { noremap = true, expr = true, silent = true })
 keymap("n", "j", "v:count == 0 ? 'gj' : 'j'", { noremap = true, expr = true, silent = true })
+
+
 
 -- Search / substitute
 vim.o.ignorecase = true
@@ -546,6 +553,10 @@ return require("packer").startup(function(use)
 	})
 
 	--- LSP
+    use({ 'j-hui/fidget.nvim', config = function ()
+        require"fidget".setup{}
+    end
+    })
 	use({
 		"neovim/nvim-lspconfig",
 		config = function()
