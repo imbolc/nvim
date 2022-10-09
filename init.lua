@@ -599,19 +599,6 @@ return require("packer").startup(function(use)
 				map("n", "[d", "<cmd>lua vim.diagnostic.goto_prev()<CR>", opts)
 				map("n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>", opts)
 				map("n", "<space>q", "<cmd>lua vim.diagnostic.setqflist()<CR>", opts)
-
-				-- Set some keybinds conditional on server capabilities
-				if client.resolved_capabilities.document_formatting then
-					map("n", "<space>f", ":lua vim.lsp.buf.formatting()<CR>", opts)
-					vim.cmd([[
-                    augroup lsp_format
-                    autocmd! * <buffer>
-                    autocmd BufWritePost <buffer> lua vim.lsp.buf.formatting_sync()
-                    augroup END
-                    ]])
-				elseif client.resolved_capabilities.document_range_formatting then
-					map("n", "<space>rf", ":lua vim.lsp.buf.range_formatting_sync()<CR>", opts)
-				end
 			end
 
 			local function make_config()
@@ -653,7 +640,7 @@ return require("packer").startup(function(use)
 
 				if server.name == "rust_analyzer" then
 					config.on_attach = function(client, bufnr)
-						client.resolved_capabilities.document_formatting = false
+						client.server_capabilities.documentFormattingProvider = false
 						on_attach(client, bufnr)
 					end
 				end
