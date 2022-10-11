@@ -7,6 +7,8 @@ local keyopts = { noremap = true, silent = true }
 
 vim.g.mapleader = ","
 
+vim.o.mouse = ""
+
 -- vim.o.cursorline = true -- higlight cursor line
 vim.o.autowrite = true -- automatically :write before running a commands
 vim.o.spelllang = "ru,en"
