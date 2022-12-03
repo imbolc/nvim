@@ -322,3 +322,4 @@ fstab
 vm
 undefine
 WASM
+minification

@@ -229,6 +229,10 @@ return require("packer").startup(function(use)
 		end,
 	})
 
+    use({ "ggandor/leap.nvim", config = function()
+        require('leap').add_default_mappings()
+    end })
+
 	use("junegunn/vim-slash") -- automatically remove search selection
 
 	-- install https://github.com/grwlf/xkb-switch
@@ -605,7 +609,7 @@ return require("packer").startup(function(use)
 
 			local function make_config()
 				local capabilities = vim.lsp.protocol.make_client_capabilities()
-				capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+				capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 				return {
 					capabilities = capabilities,
 					on_attach = on_attach,
@@ -671,6 +675,7 @@ return require("packer").startup(function(use)
 	use("williamboman/nvim-lsp-installer")
 	use("ray-x/lsp_signature.nvim")
 	use("onsails/lspkind-nvim")
+    use("edgedb/edgedb-vim")
 
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
