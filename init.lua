@@ -22,17 +22,15 @@ vim.o.swapfile = false
 -- Line numbers
 vim.wo.number = true
 vim.wo.relativenumber = true
-vim.o.signcolumn = "number"  -- show error markers in the number column
+vim.o.signcolumn = "number" -- show error markers in the number column
 
 -- Wrapping
-vim.o.wrap = false  -- disable soft wrapping at the edge of the screen
-vim.o.textwidth = 0  -- disable hard wrapping
-vim.o.linebreak = true  -- do not wrap in the middle of a word when soft wrapping is enabled
+vim.o.wrap = false -- disable soft wrapping at the edge of the screen
+vim.o.textwidth = 0 -- disable hard wrapping
+vim.o.linebreak = true -- do not wrap in the middle of a word when soft wrapping is enabled
 vim.o.breakindent = true
 keymap("n", "k", "v:count == 0 ? 'gk' : 'k'", { noremap = true, expr = true, silent = true })
 keymap("n", "j", "v:count == 0 ? 'gj' : 'j'", { noremap = true, expr = true, silent = true })
-
-
 
 -- Search / substitute
 vim.o.ignorecase = true
@@ -133,7 +131,7 @@ if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
 	})
 end
 
-return require("packer").startup(function(use)
+require("packer").startup(function(use)
 	use("wbthomason/packer.nvim")
 
 	-- Treesitter
@@ -151,7 +149,7 @@ return require("packer").startup(function(use)
 					"json",
 					"json5",
 					"lua",
-                    "markdown",
+					"markdown",
 					"python",
 					"rust",
 					"svelte",
@@ -159,7 +157,6 @@ return require("packer").startup(function(use)
 					"typescript",
 					"vue",
 					"yaml",
-
 				},
 				highlight = {
 					enable = true,
@@ -229,9 +226,12 @@ return require("packer").startup(function(use)
 		end,
 	})
 
-    use({ "ggandor/leap.nvim", config = function()
-        require('leap').add_default_mappings()
-    end })
+	use({
+		"ggandor/leap.nvim",
+		config = function()
+			require("leap").add_default_mappings()
+		end,
+	})
 
 	use("junegunn/vim-slash") -- automatically remove search selection
 
@@ -517,11 +517,11 @@ return require("packer").startup(function(use)
 
 	--- Markdown
 	use({
-        "preservim/vim-markdown",
-        config = function ()
-            vim.g.vim_markdown_folding_disabled = 1
-        end
-    })
+		"preservim/vim-markdown",
+		config = function()
+			vim.g.vim_markdown_folding_disabled = 1
+		end,
+	})
 	vim.cmd([[
     au FileType markdown setlocal wrap
     au FileType markdown setlocal spell
@@ -559,123 +559,132 @@ return require("packer").startup(function(use)
 	})
 
 	--- LSP
-    use({ 'j-hui/fidget.nvim', config = function ()
-        require"fidget".setup{}
-    end
-    })
 	use({
 		"neovim/nvim-lspconfig",
 		config = function()
-			vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "single" })
 
-			vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
-				vim.lsp.handlers.signature_help,
-				{ border = "single" }
-			)
+			vim.lsp.handlers["textDocument/publishDiagnostics"] =
+				vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+					virtual_text = true,
+					signs = true,
+					update_in_insert = true,
+				})
 
-			local lspSignatureCfg = {
-				hint_enable = false,
-				handler_opts = {
-					border = "single",
-				},
-				zindex = 50, -- signatureHelp behind completion items
-			}
+			-- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "single" })
+			--
+			-- vim.lsp.handlers["textDocument/signatureHelp"] =
+			-- 	vim.lsp.with(vim.lsp.handlers.signature_help, { border = "single" })
+
 			local on_attach = function(client, bufnr)
 				local function map(...)
 					vim.api.nvim_buf_set_keymap(bufnr, ...)
 				end
 
-				require("lsp_signature").on_attach(lspSignatureCfg)
-
-				-- mappings.
+				-- Mappings
 				local opts = { noremap = true, silent = true }
-				map("n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>", opts)
+
+				-- See `:help vim.lsp.*` for documentation on any of the below functions
+				map("n", "gD", "<Cmd>lua vim.lsp.buf.declaration()<CR>", opts)
+				map("n", "gd", "<Cmd>lua vim.lsp.buf.definition()<CR>", opts)
+				map("n", "K", "<Cmd>lua vim.lsp.buf.hover()<CR>", opts)
 				map("n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", opts)
+				map("n", "<C-k>", "<cmd>lua vim.lsp.buf.signature_help()<CR>", opts)
+				map("n", "<space>D", "<cmd>lua vim.lsp.buf.type_definition()<CR>", opts)
+				map("n", "<space>r", "<cmd>lua vim.lsp.buf.rename()<CR>", opts)
+				map("n", "<space>a", "<cmd>lua vim.lsp.buf.code_action()<CR>", opts)
 				map("n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>", opts)
-				map("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
-				-- map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
-				-- map("n", "<space>k", "<cmd>lua vim.lsp.buf.signature_help()<CR>", opts)
-				-- map("n", "<space>wa", "<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>", opts)
-				-- map("n", "<space>wr", "<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>", opts)
-				-- map("n", "<space>wl", "<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>", opts)
-				-- map("n", "<space>D", "<cmd>lua vim.lsp.buf.type_definition()<CR>", opts)
-				map("n", "<space>ca", "<cmd>lua vim.lsp.buf.code_action()<CR>", opts)
-				map("n", "<space>rn", "<cmd>lua vim.lsp.buf.rename()<CR>", opts)
 				map("n", "<space>e", "<cmd>lua vim.diagnostic.open_float()<CR>", opts)
 				map("n", "[d", "<cmd>lua vim.diagnostic.goto_prev()<CR>", opts)
 				map("n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>", opts)
-				map("n", "<space>q", "<cmd>lua vim.diagnostic.setqflist()<CR>", opts)
+				map("n", "<space>q", "<cmd>lua vim.diagnostic.set_loclist()<CR>", opts)
+				map("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
+
+				require("lsp_signature").on_attach({
+					doc_lines = 0,
+					hint_enable = false,
+					zindex = 50, -- signature behind completion items
+					handler_opts = {
+						border = "none",
+					},
+				})
 			end
 
-			local function make_config()
-				local capabilities = vim.lsp.protocol.make_client_capabilities()
-				capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
-				return {
-					capabilities = capabilities,
-					on_attach = on_attach,
-				}
-			end
-
-			require("nvim-lsp-installer").on_server_ready(function(server)
-				local config = make_config()
-
-				if server.name == "sumneko_lua" then
-					local runtime_path = vim.split(package.path, ";")
-					table.insert(runtime_path, "lua/?.lua")
-					table.insert(runtime_path, "lua/?/init.lua")
-					config.root_dir = require("lspconfig.util").root_pattern(".git", "init.lua")
-					config.settings = {
-						Lua = {
-							runtime = {
-								-- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-								version = "LuaJIT",
-								-- Setup your lua path
-								path = runtime_path,
-							},
-							diagnostics = {
-								-- Get the language server to recognize the `vim` global
-								globals = { "vim" },
-							},
-							-- Do not send telemetry data containing a randomized but unique identifier
-							telemetry = {
+			local capabilities = require("cmp_nvim_lsp").default_capabilities()
+			local lspconfig = require("lspconfig")
+			lspconfig.rust_analyzer.setup({
+				on_attach = on_attach,
+				flags = {
+					debounce_text_changes = 150,
+				},
+				settings = {
+					["rust-analyzer"] = {
+						cargo = {
+							allFeatures = true,
+						},
+						completion = {
+							postfix = {
 								enable = false,
 							},
 						},
-					}
-				end
-
-				if server.name == "rust_analyzer" then
-					config.on_attach = function(client, bufnr)
-						client.server_capabilities.documentFormattingProvider = false
-						on_attach(client, bufnr)
-					end
-				end
-
-				if server.name == "pylsp" then
-					config.on_attach = function(client, bufnr)
-						client.resolved_capabilities.document_formatting = false
-						on_attach(client, bufnr)
-						config.settings = {
-							pylsp = {
-								-- configurationSources = { "flake8" },
-								plugins = {
-									-- TODO ignoring doesn't work, not here nor in `.flake8` config
-									flake8 = { ignore = { "E203" } },
-								},
-							},
-						}
-					end
-				end
-
-				server:setup(config)
-				vim.cmd([[ do User LspAttachBuffers ]])
-			end)
+					},
+				},
+				capabilities = capabilities,
+			})
+			lspconfig.sumneko_lua.setup({
+				on_attach = on_attach,
+				settings = {
+					Lua = {
+						diagnostics = {
+							globals = { "vim", "require" },
+						},
+					},
+				},
+			})
+			lspconfig.marksman.setup({
+				on_attach = on_attach,
+            })
 		end,
 	})
-	use("williamboman/nvim-lsp-installer")
+	use({
+		"williamboman/mason.nvim",
+		config = function()
+			require("mason").setup()
+		end,
+	})
+	use({
+		"williamboman/mason-lspconfig.nvim",
+		requires = {
+			"williamboman/mason.nvim",
+		},
+		config = function()
+			require("mason-lspconfig").setup({
+				ensure_installed = {
+					"cssls",
+					"quick_lint_js",
+					"jsonls",
+					"bashls",
+					"sumneko_lua",
+					"rust_analyzer",
+					"marksman",
+					"jedi_language_server",
+					"sqlls",
+					"svelte",
+					"taplo",
+					"volar",
+					"yamlls",
+				},
+				-- automatic_installation = true,
+			})
+		end,
+	})
+
+	--- LSP progress at the bottom-right
+	use({ "j-hui/fidget.nvim", config = "require'fidget'.setup{}" })
+
+	--- Show function signature when you type
 	use("ray-x/lsp_signature.nvim")
 	use("onsails/lspkind-nvim")
-    use("edgedb/edgedb-vim")
+	use("edgedb/edgedb-vim")
 
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
@@ -685,9 +694,9 @@ return require("packer").startup(function(use)
 
 	-- Automatically recompile plugins, on the init file change
 	vim.cmd([[
-    augroup packer_user_config
-    autocmd!
-    autocmd BufWritePost init.lua source <afile> | PackerCompile
-    augroup end
+        augroup packer_user_config
+        autocmd!
+        autocmd BufWritePost init.lua source <afile> | PackerCompile
+        augroup end
     ]])
 end)
