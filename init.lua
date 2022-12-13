@@ -2,91 +2,84 @@
 -- pip3 install black isort ueberzug
 -- cargo install taplo-cli stylua comrak rust-script
 
-local keymap = vim.api.nvim_set_keymap
-local keyopts = { noremap = true, silent = true }
-
 vim.g.mapleader = ","
 
-vim.o.mouse = ""
+vim.opt.mouse = ""
 
--- vim.o.cursorline = true -- higlight cursor line
-vim.o.autowrite = true -- automatically :write before running a commands
-vim.o.spelllang = "ru,en"
+vim.opt.autowrite = true -- automatically :write before running a commands
+vim.opt.spelllang = "ru,en"
 
 -- set shortmess+=c  " Avoid showing extra messages when using completion
 
 -- Backup
-vim.o.backup = false
-vim.o.swapfile = false
+vim.opt.backup = false
+vim.opt.swapfile = false
 
 -- Line numbers
-vim.wo.number = true
-vim.wo.relativenumber = true
-vim.o.signcolumn = "number" -- show error markers in the number column
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.signcolumn = "number" -- show error markers in the number column
 
 -- Wrapping
-vim.o.wrap = false -- disable soft wrapping at the edge of the screen
-vim.o.textwidth = 0 -- disable hard wrapping
-vim.o.linebreak = true -- do not wrap in the middle of a word when soft wrapping is enabled
-vim.o.breakindent = true
-keymap("n", "k", "v:count == 0 ? 'gk' : 'k'", { noremap = true, expr = true, silent = true })
-keymap("n", "j", "v:count == 0 ? 'gj' : 'j'", { noremap = true, expr = true, silent = true })
+vim.opt.wrap = false -- disable soft wrapping at the edge of the screen
+vim.opt.textwidth = 0 -- disable hard wrapping
+vim.opt.linebreak = true -- do not wrap in the middle of a word when soft wrapping is enabled
+vim.opt.breakindent = true -- preserve indentation of softly wrapped lines
+-- move through softly wrapped lines more naturally
+vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
 -- Search / substitute
-vim.o.ignorecase = true
-vim.o.smartcase = true
-vim.o.inccommand = "split" -- preview substitutions
-vim.o.gdefault = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.inccommand = "split" -- preview substitutions
+vim.opt.gdefault = true
 
 -- Indentation
-vim.o.tabstop = 4
-vim.o.softtabstop = 4
-vim.o.expandtab = true
-vim.o.shiftwidth = 4
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.expandtab = true
+vim.opt.shiftwidth = 4
 
 -- Decrease update time
-vim.o.updatetime = 100
+vim.opt.updatetime = 100
 
--- don't lose selection when shifting
-keymap("x", "<", "<gv", keyopts)
-keymap("x", ">", ">gv", keyopts)
+-- Don't lose selection when shifting
+vim.keymap.set("x", "<", "<gv", { silent = true })
+vim.keymap.set("x", ">", ">gv", { silent = true })
 
 -- Splits
-vim.o.splitbelow = true
-vim.o.splitright = true
+vim.opt.splitbelow = true
+vim.opt.splitright = true
 
-keymap("n", "<C-h>", "<C-w>h", keyopts)
-keymap("n", "<C-j>", "<C-w>j", keyopts)
-keymap("n", "<C-k>", "<C-w>k", keyopts)
-keymap("n", "<C-l>", "<C-w>l", keyopts)
+vim.keymap.set("n", "<C-h>", "<C-w>h", { silent = true })
+vim.keymap.set("n", "<C-j>", "<C-w>j", { silent = true })
+vim.keymap.set("n", "<C-k>", "<C-w>k", { silent = true })
+vim.keymap.set("n", "<C-l>", "<C-w>l", { silent = true })
 
-keymap("n", "<C-Up>", ":resize +3<CR>", keyopts)
-keymap("n", "<C-Down>", ":resize -3<CR>", keyopts)
-keymap("n", "<C-Left>", ":vertical resize +3<CR>", keyopts)
-keymap("n", "<C-Right>", ":vertical resize -3<CR>", keyopts)
+vim.keymap.set("n", "<C-Up>", ":resize +3<CR>", { silent = true })
+vim.keymap.set("n", "<C-Down>", ":resize -3<CR>", { silent = true })
+vim.keymap.set("n", "<C-Left>", ":vertical resize +3<CR>", { silent = true })
+vim.keymap.set("n", "<C-Right>", ":vertical resize -3<CR>", { silent = true })
 
 -- disable ex mode
-keymap("n", "Q", "<nop>", keyopts)
-keymap("n", "q:", "<nop>", keyopts)
+vim.keymap.set("n", "Q", "<nop>", { silent = true })
+vim.keymap.set("n", "q:", "<nop>", { silent = true })
 
 -- Colorscheme
-vim.o.termguicolors = true
-vim.o.background = "light"
+vim.opt.termguicolors = true
+vim.opt.background = "light"
 
 -- Set completeopt to have a better completion experience
--- vim.o.completeopt = "menuone,noselect"
+-- vim.opt.completeopt = "menuone,noselect"
 
 -- Switching between tabs by <tab> / <shift-tab>
-keymap("n", "<tab>", "gt", keyopts)
-keymap("n", "<s-tab>", "gT", keyopts)
-
--- don't lose selection when shifting
-keymap("x", "<", "<gv", keyopts)
-keymap("x", ">", ">gv", keyopts)
+vim.keymap.set("n", "<tab>", "gt", { silent = true })
+vim.keymap.set("n", "<s-tab>", "gT", { silent = true })
 
 -- Show command line only with filename in it
-vim.o.laststatus = 1
-vim.o.rulerformat = "%15(%=%l,%c %P%)"
+vim.opt.laststatus = 1
+vim.opt.rulerformat = "%15(%=%l,%c %P%)"
 vim.api.nvim_exec(
 	[[
     function! _get_commandline_filename()
@@ -133,6 +126,12 @@ end
 
 require("packer").startup(function(use)
 	use("wbthomason/packer.nvim")
+
+    -- Closes brackets
+	use("rstacruz/vim-closer")
+
+    -- Closes if's etc in Lua, Bash, ...
+    use("tpope/vim-endwise")
 
 	-- Treesitter
 	use({
@@ -181,8 +180,8 @@ require("packer").startup(function(use)
 	use({ "kevinhwang91/rnvimr", run = "pip3 install ranger-fm pynvim ueberzug" })
 	vim.g.rnvimr_enable_ex = 1
 	vim.g.rnvimr_enable_picker = 1
-	keymap("n", "<leader>t", ":RnvimrToggle<cr>", keyopts)
-	keymap("n", "<leader>nc", ":e ~/Documents/scroll/data<cr>", keyopts)
+	vim.keymap.set("n", "<leader>t", ":RnvimrToggle<cr>", { silent = true })
+	vim.keymap.set("n", "<leader>nc", ":e ~/Documents/scroll/data<cr>", { silent = true })
 	vim.g.rnvimr_action = {
 		["<cr>"] = "NvimEdit tabedit",
 		["<C-t>"] = "NvimEdit tabedit",
@@ -352,14 +351,14 @@ require("packer").startup(function(use)
 	use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
 	use("nvim-telescope/telescope-packer.nvim")
 
-	keymap("n", "<leader>f", "<cmd>lua require('telescope.builtin').find_files()<cr>", keyopts)
-	keymap("n", "<leader>g", "<cmd>lua require('telescope.builtin').live_grep()<cr>", keyopts)
-	keymap(
+	vim.keymap.set("n", "<leader>f", "<cmd>lua require('telescope.builtin').find_files()<cr>", { silent = true })
+	vim.keymap.set("n", "<leader>g", "<cmd>lua require('telescope.builtin').live_grep()<cr>", { silent = true })
+	vim.keymap.set(
 		"n",
 		"<leader>n",
 		"<cmd>lua require('telescope.builtin').find_files{search_dirs={'~/Documents/scroll/data'}}<cr>",
 		-- "<cmd>lua require('telescope.builtin').live_grep{search_dirs={'~/Documents/scroll/data'}}<cr>",
-		keyopts
+        { silent = true }
 	)
 
 	--- Autocompletion
@@ -562,7 +561,6 @@ require("packer").startup(function(use)
 	use({
 		"neovim/nvim-lspconfig",
 		config = function()
-
 			vim.lsp.handlers["textDocument/publishDiagnostics"] =
 				vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
 					virtual_text = true,
@@ -642,7 +640,16 @@ require("packer").startup(function(use)
 			})
 			lspconfig.marksman.setup({
 				on_attach = on_attach,
-            })
+			})
+			lspconfig.pyright.setup({
+				on_attach = on_attach,
+			})
+			lspconfig.quick_lint_js.setup({
+				on_attach = on_attach,
+			})
+			lspconfig.eslint.setup({
+				on_attach = on_attach,
+			})
 		end,
 	})
 	use({
@@ -659,15 +666,15 @@ require("packer").startup(function(use)
 		config = function()
 			require("mason-lspconfig").setup({
 				ensure_installed = {
-					"cssls",
-					"quick_lint_js",
-					"jsonls",
 					"bashls",
-					"sumneko_lua",
-					"rust_analyzer",
+					"cssls",
+					"jsonls",
 					"marksman",
-					"jedi_language_server",
+					"pyright",
+					"quick_lint_js",
+					"rust_analyzer",
 					"sqlls",
+					"sumneko_lua",
 					"svelte",
 					"taplo",
 					"volar",
