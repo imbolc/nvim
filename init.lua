@@ -7,9 +7,7 @@ vim.g.mapleader = ","
 vim.opt.mouse = ""
 
 vim.opt.autowrite = true -- automatically :write before running a commands
-vim.opt.spelllang = "ru,en"
-
--- set shortmess+=c  " Avoid showing extra messages when using completion
+vim.opt.spelllang = "en,ru"
 
 -- Backup
 vim.opt.backup = false
@@ -18,7 +16,9 @@ vim.opt.swapfile = false
 -- Line numbers
 vim.opt.number = true
 vim.opt.relativenumber = true
-vim.opt.signcolumn = "number" -- show error markers in the number column
+vim.opt.signcolumn = "no" -- do dot display sign column to have more horizontal space
+
+vim.api.nvim_command("autocmd ColorScheme * highlight VertSplit guibg=bg guifg=white")
 
 -- Wrapping
 vim.opt.wrap = false -- disable soft wrapping at the edge of the screen
@@ -113,25 +113,20 @@ vim.api.nvim_exec(
 
 -- Install packer
 local install_path = vim.fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
+local install_plugins = false
+
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-	PACKER_BOOTSTRAP = vim.fn.system({
-		"git",
-		"clone",
-		"--depth",
-		"1",
-		"https://github.com/wbthomason/packer.nvim",
-		install_path,
-	})
+	print("Installing packer...")
+	local packer_url = "https://github.com/wbthomason/packer.nvim"
+	vim.fn.system({ "git", "clone", "--depth", "1", packer_url, install_path })
+	print("Done.")
+
+	vim.cmd("packadd packer.nvim")
+	install_plugins = true
 end
 
 require("packer").startup(function(use)
 	use("wbthomason/packer.nvim")
-
-    -- Closes brackets
-	use("rstacruz/vim-closer")
-
-    -- Closes if's etc in Lua, Bash, ...
-    use("tpope/vim-endwise")
 
 	-- Treesitter
 	use({
@@ -149,9 +144,12 @@ require("packer").startup(function(use)
 					"json5",
 					"lua",
 					"markdown",
+					"markdown_inline",
 					"python",
+                    "query",  -- treesitter
 					"rust",
 					"svelte",
+                    "sql",
 					"toml",
 					"typescript",
 					"vue",
@@ -193,7 +191,20 @@ require("packer").startup(function(use)
 
 	-- Rust
 	use("rust-lang/rust.vim")
-	vim.cmd([[au FileType rust map <buffer> <leader>r :w\|!rust-script %<cr>]])
+	-- Enable SQL highlighting inside Rust sqlx string literals
+	-- vim.cmd([[
+ --      autocmd FileType rust :lua << EOF
+ --        vim.cmd("echo 'Custom Rust syntax file loaded'")
+ --        vim.cmd("syntax include @Sql syntax/sql.vim")
+ --        vim.cmd("syntax region sqlxSQL start=+\\b(sqlx::query!\\?)+ end=+\"+ contains=@Sql")
+ --      EOF
+ --    ]])
+	vim.cmd([[
+        au FileType rust map <buffer> <leader>r :w\|!rust-script %<cr>
+        " au FileType rust setlocal spell
+    ]])
+
+	-- use({ "alopatindev/cargo-limit", run = "cargo install cargo-limit nvim-send" })
 
 	-- Tables
 	use("dhruvasagar/vim-table-mode")
@@ -222,21 +233,22 @@ require("packer").startup(function(use)
 			require("Comment").setup()
 			local ft = require("Comment.ft")
 			ft.sailfish = "<%#%s%>"
+			ft.json5 = "// %s"
 		end,
 	})
 
-	use({
-		"ggandor/leap.nvim",
-		config = function()
-			require("leap").add_default_mappings()
-		end,
-	})
+	-- use({
+	-- 	"ggandor/leap.nvim",
+	-- 	config = function()
+	-- 		require("leap").add_default_mappings()
+	-- 	end,
+	-- })
 
 	use("junegunn/vim-slash") -- automatically remove search selection
 
 	-- install https://github.com/grwlf/xkb-switch
-	use("lyokha/vim-xkbswitch") -- automatically switch layout back leaving insert mode
-	vim.g.XkbSwitchEnabled = 1
+	-- use("lyokha/vim-xkbswitch") -- automatically switch layout back leaving insert mode
+	-- vim.g.XkbSwitchEnabled = 1
 
 	use({
 		"mhartington/formatter.nvim",
@@ -273,6 +285,7 @@ require("packer").startup(function(use)
 					css = { prettier() },
 					vue = { prettier() },
 					svelte = { prettier() },
+					typescript = { prettier() },
 					-- markdown = { prettier() },
 					javascript = { prettier() },
 					lua = { exe_args_stdin("stylua", "-") },
@@ -284,11 +297,11 @@ require("packer").startup(function(use)
 			-- autocmd BufWritePost *.rs,*.py,*.html,*.lua FormatWrite
 			vim.api.nvim_exec(
 				[[
-                augroup FormatAutogroup
-                autocmd!
-                autocmd BufWritePost * silent! FormatWrite
-                augroup END
-                ]],
+	               augroup FormatAutogroup
+	               autocmd!
+	               autocmd BufWritePost * silent! FormatWrite
+	               augroup END
+	               ]],
 				true
 			)
 		end,
@@ -358,7 +371,7 @@ require("packer").startup(function(use)
 		"<leader>n",
 		"<cmd>lua require('telescope.builtin').find_files{search_dirs={'~/Documents/scroll/data'}}<cr>",
 		-- "<cmd>lua require('telescope.builtin').live_grep{search_dirs={'~/Documents/scroll/data'}}<cr>",
-        { silent = true }
+		{ silent = true }
 	)
 
 	--- Autocompletion
@@ -514,26 +527,31 @@ require("packer").startup(function(use)
 	--- Postgres
 	vim.cmd([[au FileType sql map <buffer> <leader>r :w\|!psql -f %<cr>]])
 
+	--- Html
+	vim.cmd([[au FileType html map <buffer> <leader>r :w\|!open %<cr>]])
+
 	--- Markdown
 	use({
 		"preservim/vim-markdown",
+		requires = { "godlygeek/tabular" },
 		config = function()
 			vim.g.vim_markdown_folding_disabled = 1
 		end,
 	})
 	vim.cmd([[
-    au FileType markdown setlocal wrap
-    au FileType markdown setlocal spell
-    au FileType markdown setlocal conceallevel=2
-    au FileType markdown vnoremap g gq
-    au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
-    ]])
+       au FileType markdown setlocal wrap
+       au FileType markdown setlocal spell
+       au FileType markdown setlocal conceallevel=2
+       au FileType markdown vnoremap g gq
+       au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
+       au FileType markdown TSBufDisable highlight
+       ]])
 
 	--- Yaml
 	vim.cmd([[
-    au FileType yaml setlocal wrap
-    au FileType yaml setlocal spell
-    ]])
+       au FileType yaml setlocal wrap
+       au FileType yaml setlocal spell
+   ]])
 
 	--- Vue
 	use("posva/vim-vue")
@@ -628,7 +646,7 @@ require("packer").startup(function(use)
 				},
 				capabilities = capabilities,
 			})
-			lspconfig.sumneko_lua.setup({
+			lspconfig.lua_ls.setup({
 				on_attach = on_attach,
 				settings = {
 					Lua = {
@@ -647,13 +665,17 @@ require("packer").startup(function(use)
 			lspconfig.quick_lint_js.setup({
 				on_attach = on_attach,
 			})
-			lspconfig.eslint.setup({
+			-- lspconfig.eslint.setup({
+			-- 	on_attach = on_attach,
+			-- })
+			lspconfig.vuels.setup({
 				on_attach = on_attach,
 			})
 		end,
 	})
 	use({
 		"williamboman/mason.nvim",
+		run = ":MasonUpdate",
 		config = function()
 			require("mason").setup()
 		end,
@@ -662,6 +684,7 @@ require("packer").startup(function(use)
 		"williamboman/mason-lspconfig.nvim",
 		requires = {
 			"williamboman/mason.nvim",
+			"neovim/nvim-lspconfig",
 		},
 		config = function()
 			require("mason-lspconfig").setup({
@@ -669,15 +692,16 @@ require("packer").startup(function(use)
 					"bashls",
 					"cssls",
 					"jsonls",
+					"lua_ls",
 					"marksman",
 					"pyright",
 					"quick_lint_js",
 					"rust_analyzer",
 					"sqlls",
-					"sumneko_lua",
 					"svelte",
 					"taplo",
 					"volar",
+					"vuels",
 					"yamlls",
 				},
 				-- automatic_installation = true,
@@ -685,17 +709,23 @@ require("packer").startup(function(use)
 		end,
 	})
 
+	use("nvim-treesitter/playground")
+
 	--- LSP progress at the bottom-right
 	use({ "j-hui/fidget.nvim", config = "require'fidget'.setup{}" })
 
 	--- Show function signature when you type
 	use("ray-x/lsp_signature.nvim")
 	use("onsails/lspkind-nvim")
+
 	use("edgedb/edgedb-vim")
+
+	-- use("Xuyuanp/sqlx-rs.nvim")
+    use("~/open/sqlx-rs.nvim")
 
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
-	if PACKER_BOOTSTRAP then
+	if install_plugins then
 		require("packer").sync()
 	end
 
