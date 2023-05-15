@@ -166,6 +166,9 @@ require("packer").startup(function(use)
 				indent = {
 					enable = true,
 				},
+                context_commentstring = {
+                    enable = true,
+                },
 			})
 		end,
 	})
