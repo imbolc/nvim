@@ -146,14 +146,15 @@ require("packer").startup(function(use)
 					"markdown",
 					"markdown_inline",
 					"python",
-                    "query",  -- treesitter
 					"rust",
 					"svelte",
-                    "sql",
 					"toml",
 					"typescript",
 					"vue",
 					"yaml",
+                    "query",  -- treesitter
+                    "scss",
+                    "sql",
 				},
 				highlight = {
 					enable = true,
@@ -224,6 +225,9 @@ require("packer").startup(function(use)
 
 	-- Bash
 	vim.cmd([[au FileType sh map <buffer> <leader>r :w\|!bash %<cr>]])
+
+	-- Python
+	vim.cmd([[au FileType python map <buffer> <leader>r :w\|!python3 %<cr>]])
 
 	-- Commenting
 	use({
