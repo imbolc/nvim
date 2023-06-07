@@ -41,6 +41,11 @@ vim.opt.softtabstop = 4
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
 
+-- --  Display tabs
+-- vim.wo.list = true
+-- vim.opt.listchars:append("tab:»·")
+
+
 -- Decrease update time
 vim.opt.updatetime = 100
 
