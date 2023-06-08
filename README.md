@@ -1,5 +1,10 @@
 # Nvim config
 
+## Install
+```sh
+git clone https://github.com/imbolc/nvim ~/.config/nvim
+```
+
 ## Packer
 
 - install plugins and exit: `nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'`
