@@ -732,8 +732,8 @@ require("packer").startup(function(use)
 
 	use("edgedb/edgedb-vim")
 
-	-- use("Xuyuanp/sqlx-rs.nvim")
-    use("~/open/sqlx-rs.nvim")
+	use("Xuyuanp/sqlx-rs.nvim")
+    -- use("~/open/sqlx-rs.nvim")
 
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
