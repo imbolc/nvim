@@ -116,6 +116,10 @@ vim.api.nvim_exec(
 	true
 )
 
+-- Netrw file manager
+vim.keymap.set("n", "<leader>t", ":echo 'foo'|:Texplore %:p:h<cr>", { silent = true })
+vim.g.netrw_banner = 0
+
 -- Install packer
 local install_path = vim.fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
 local install_plugins = false
@@ -183,20 +187,26 @@ require("packer").startup(function(use)
 	use("GutenYe/json5.vim")
 	vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
 
-	-- Ranger
-	use({ "kevinhwang91/rnvimr", run = "pip3 install ranger-fm pynvim ueberzug" })
-	vim.g.rnvimr_enable_ex = 1
-	vim.g.rnvimr_enable_picker = 1
-	vim.keymap.set("n", "<leader>t", ":RnvimrToggle<cr>", { silent = true })
-	vim.keymap.set("n", "<leader>nc", ":e ~/Documents/scroll/data<cr>", { silent = true })
-	vim.g.rnvimr_action = {
-		["<cr>"] = "NvimEdit tabedit",
-		["<C-t>"] = "NvimEdit tabedit",
-		["<C-x>"] = "NvimEdit split",
-		["<C-v>"] = "NvimEdit vsplit",
-		["gw"] = "JumpNvimCwd",
-		["yw"] = "EmitRangerCwd",
-	}
+    -- -- Joshuto (ranger clone)
+    -- use("theniceboy/joshuto.nvim")
+    -- vim.keymap.set("n", "<leader>d", ":w|:tabe %:p:h|:Joshuto<cr>", { silent = true })
+
+	-- -- Ranger
+	-- use({ "kevinhwang91/rnvimr", run = "sudo apt install ranger python3-pynvim ueberzug" })
+	-- vim.g.rnvimr_enable_ex = 1
+	-- vim.g.rnvimr_enable_picker = 1
+    -- vim.g.rnvimr_enable_bw = 1
+	-- vim.keymap.set("n", "<leader>t", ":RnvimrToggle<cr>", { silent = true })
+	-- vim.keymap.set("n", "<leader>nc", ":e ~/Documents/scroll/data<cr>", { silent = true })
+	-- vim.g.rnvimr_action = {
+	-- 	["<cr>"] = "NvimEdit tabedit",
+	-- 	["<C-t>"] = "NvimEdit tabedit",
+	-- 	["<C-x>"] = "NvimEdit split",
+	-- 	["<C-v>"] = "NvimEdit vsplit",
+	-- 	["gw"] = "JumpNvimCwd",
+	-- 	["yw"] = "EmitRangerCwd",
+	-- }
+
 
 	-- Rust
 	use("rust-lang/rust.vim")
@@ -353,7 +363,7 @@ require("packer").startup(function(use)
 
 			telescope.setup({
 				defaults = {
-					file_ignore_patterns = { ".git", "node_modules" },
+					file_ignore_patterns = { "%.git", "node_modules" },
 					mappings = {
 						i = {
 							["<cr>"] = actions.select_tab,
@@ -724,7 +734,7 @@ require("packer").startup(function(use)
 	use("nvim-treesitter/playground")
 
 	--- LSP progress at the bottom-right
-	use({ "j-hui/fidget.nvim", config = "require'fidget'.setup{}" })
+	use({ "j-hui/fidget.nvim", tag = "legacy", config = "require'fidget'.setup{}" })
 
 	--- Show function signature when you type
 	use("ray-x/lsp_signature.nvim")
