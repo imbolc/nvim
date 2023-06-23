@@ -1,8 +1,15 @@
 # Nvim config
 
-## Install
+## Install via SSH (editing)
+```sh
+git clone git@github.com:imbolc/nvim.git ~/.config/nvim
+git clone git@github.com:imbolc/notes.git ~/Documents/notes
+```
+
+## Install via HTTPS (read-only)
 ```sh
 git clone https://github.com/imbolc/nvim ~/.config/nvim
+git clone https://github.com/imbolc/notes.git ~/Documents/notes
 ```
 
 ## Packer
@@ -11,7 +18,6 @@ git clone https://github.com/imbolc/nvim ~/.config/nvim
 
 ## TODO
 
-- Autocomplete should work with lowercase, e.g. `:colorscheme pap<tab>` should select `PaperColor`
 - https://github.com/nvim-treesitter/nvim-treesitter#quickstart
     daf - delete outside function
     [m - move to the next method
@@ -19,18 +25,6 @@ git clone https://github.com/imbolc/nvim ~/.config/nvim
 Bugs:
 
 - Auto-completion: first tab hit selects the second item
-- Auto completion of files - how to select a folder with tab?
-
-Features:
-
-- Open git grep in a quickfix list
-- Open clippy suggestions in a quickfix list
-
-Stuff from the previous config:
-
-- <https://github.com/neovim/nvim-lspconfig>
-- <https://github.com/nvim-lua/lsp_extensions.nvim>
-- <https://github.com/lifepillar/pgsql.vim>
 
 Stuff to consider:
 
