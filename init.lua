@@ -197,7 +197,7 @@ require("packer").startup(function(use)
 	-- vim.g.rnvimr_enable_picker = 1
     -- vim.g.rnvimr_enable_bw = 1
 	-- vim.keymap.set("n", "<leader>t", ":RnvimrToggle<cr>", { silent = true })
-	-- vim.keymap.set("n", "<leader>nc", ":e ~/Documents/scroll/data<cr>", { silent = true })
+	-- vim.keymap.set("n", "<leader>nc", ":e ~/Documents/notes<cr>", { silent = true })
 	-- vim.g.rnvimr_action = {
 	-- 	["<cr>"] = "NvimEdit tabedit",
 	-- 	["<C-t>"] = "NvimEdit tabedit",
@@ -391,8 +391,7 @@ require("packer").startup(function(use)
 	vim.keymap.set(
 		"n",
 		"<leader>n",
-		"<cmd>lua require('telescope.builtin').find_files{search_dirs={'~/Documents/scroll/data'}}<cr>",
-		-- "<cmd>lua require('telescope.builtin').live_grep{search_dirs={'~/Documents/scroll/data'}}<cr>",
+		"<cmd>lua require('telescope.builtin').find_files{search_dirs={'~/Documents/notes'}}<cr>",
 		{ silent = true }
 	)
 
@@ -563,7 +562,7 @@ require("packer").startup(function(use)
 	vim.cmd([[
        au FileType markdown setlocal wrap
        au FileType markdown setlocal spell
-       au FileType markdown setlocal conceallevel=2
+       au FileType markdown setlocal conceallevel=3
        au FileType markdown vnoremap g gq
        au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
        au FileType markdown TSBufDisable highlight
