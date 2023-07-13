@@ -42,8 +42,8 @@ vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
 
 -- --  Display tabs
--- vim.wo.list = true
--- vim.opt.listchars:append("tab:»·")
+vim.wo.list = true
+vim.opt.listchars:append("tab:»·")
 
 
 -- Decrease update time
@@ -117,7 +117,8 @@ vim.api.nvim_exec(
 )
 
 -- Netrw file manager
-vim.keymap.set("n", "<leader>t", ":echo 'foo'|:Texplore %:p:h<cr>", { silent = true })
+-- I use it with a minimal setup, but prefer a Ranger-like layout with files preview
+vim.keymap.set("n", "<leader>d", ":echo 'foo'|:Texplore %:p:h<cr>", { silent = true })
 vim.g.netrw_banner = 0
 
 -- Install packer
@@ -187,9 +188,9 @@ require("packer").startup(function(use)
 	use("GutenYe/json5.vim")
 	vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
 
-    -- -- Joshuto (ranger clone)
-    -- use("theniceboy/joshuto.nvim")
-    -- vim.keymap.set("n", "<leader>d", ":w|:tabe %:p:h|:Joshuto<cr>", { silent = true })
+    -- Joshuto (ranger clone)
+    use("theniceboy/joshuto.nvim")
+    vim.keymap.set("n", "<leader>d", ":w|:tabe %:p:h|:Joshuto<cr>", { silent = true })
 
 	-- -- Ranger
 	-- use({ "kevinhwang91/rnvimr", run = "sudo apt install ranger python3-pynvim ueberzug" })
@@ -281,7 +282,7 @@ require("packer").startup(function(use)
 					table.insert(args, "--stdin-filepath")
 					table.insert(args, vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)))
 					return {
-						exe = "prettier",
+						exe = "/usr/bin/node /usr/local/bin/prettier",  -- use global node version
 						args = args,
 						stdin = true,
 					}
@@ -562,7 +563,7 @@ require("packer").startup(function(use)
 	vim.cmd([[
        au FileType markdown setlocal wrap
        au FileType markdown setlocal spell
-       au FileType markdown setlocal conceallevel=3
+       au FileType markdown setlocal conceallevel=0
        au FileType markdown vnoremap g gq
        au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
        au FileType markdown TSBufDisable highlight
