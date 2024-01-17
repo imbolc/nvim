@@ -41,10 +41,9 @@ vim.opt.softtabstop = 4
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
 
--- --  Display tabs
-vim.wo.list = true
-vim.opt.listchars:append("tab:»·")
-
+-- --  Display tab characters
+-- vim.wo.list = true
+-- vim.opt.listchars:append("tab:>·")
 
 -- Decrease update time
 vim.opt.updatetime = 100
@@ -118,8 +117,7 @@ vim.api.nvim_exec(
 
 -- Netrw file manager
 -- I use it with a minimal setup, but prefer a Ranger-like layout with files preview
-vim.keymap.set("n", "<leader>d", ":echo 'foo'|:Texplore %:p:h<cr>", { silent = true })
-vim.g.netrw_banner = 0
+vim.keymap.set("n", "<leader>d", ":tabe %:p:h<cr>:echo 'D - delete | d - mkdir | % - new file'<cr>", { silent = true })
 
 -- Install packer
 local install_path = vim.fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
@@ -162,9 +160,9 @@ require("packer").startup(function(use)
 					"typescript",
 					"vue",
 					"yaml",
-                    "query",  -- treesitter
-                    "scss",
-                    "sql",
+					"query", -- treesitter
+					"scss",
+					"sql",
 				},
 				highlight = {
 					enable = true,
@@ -177,9 +175,6 @@ require("packer").startup(function(use)
 				indent = {
 					enable = true,
 				},
-                context_commentstring = {
-                    enable = true,
-                },
 			})
 		end,
 	})
@@ -188,43 +183,30 @@ require("packer").startup(function(use)
 	use("GutenYe/json5.vim")
 	vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
 
-    -- Joshuto (ranger clone)
-    use("theniceboy/joshuto.nvim")
-    vim.keymap.set("n", "<leader>d", ":w|:tabe %:p:h|:Joshuto<cr>", { silent = true })
-
-	-- -- Ranger
-	-- use({ "kevinhwang91/rnvimr", run = "sudo apt install ranger python3-pynvim ueberzug" })
-	-- vim.g.rnvimr_enable_ex = 1
-	-- vim.g.rnvimr_enable_picker = 1
-    -- vim.g.rnvimr_enable_bw = 1
-	-- vim.keymap.set("n", "<leader>t", ":RnvimrToggle<cr>", { silent = true })
-	-- vim.keymap.set("n", "<leader>nc", ":e ~/Documents/notes<cr>", { silent = true })
-	-- vim.g.rnvimr_action = {
-	-- 	["<cr>"] = "NvimEdit tabedit",
-	-- 	["<C-t>"] = "NvimEdit tabedit",
-	-- 	["<C-x>"] = "NvimEdit split",
-	-- 	["<C-v>"] = "NvimEdit vsplit",
-	-- 	["gw"] = "JumpNvimCwd",
-	-- 	["yw"] = "EmitRangerCwd",
-	-- }
-
+	-- Joshuto (ranger clone)
+	use("theniceboy/joshuto.nvim")
+	vim.keymap.set("n", "<leader>d", ":lua require'joshuto'.joshuto({ edit_in_tab = true })<cr>", { silent = true })
 
 	-- Rust
 	use("rust-lang/rust.vim")
 	-- Enable SQL highlighting inside Rust sqlx string literals
 	-- vim.cmd([[
- --      autocmd FileType rust :lua << EOF
- --        vim.cmd("echo 'Custom Rust syntax file loaded'")
- --        vim.cmd("syntax include @Sql syntax/sql.vim")
- --        vim.cmd("syntax region sqlxSQL start=+\\b(sqlx::query!\\?)+ end=+\"+ contains=@Sql")
- --      EOF
- --    ]])
+	--      autocmd FileType rust :lua << EOF
+	--        vim.cmd("echo 'Custom Rust syntax file loaded'")
+	--        vim.cmd("syntax include @Sql syntax/sql.vim")
+	--        vim.cmd("syntax region sqlxSQL start=+\\b(sqlx::query!\\?)+ end=+\"+ contains=@Sql")
+	--      EOF
+	--    ]])
 	vim.cmd([[
-        au FileType rust map <buffer> <leader>r :w\|!rust-script %<cr>
+        au FileType rust map <buffer> <leader>r :w\|! DATABASE_URL=postgres:/// rust-script %<cr>
         " au FileType rust setlocal spell
     ]])
 
 	-- use({ "alopatindev/cargo-limit", run = "cargo install cargo-limit nvim-send" })
+
+	vim.cmd([[
+        au FileType lua map <buffer> <leader>r :w\| :source  %<cr>
+    ]])
 
 	-- Tables
 	use("dhruvasagar/vim-table-mode")
@@ -282,7 +264,7 @@ require("packer").startup(function(use)
 					table.insert(args, "--stdin-filepath")
 					table.insert(args, vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)))
 					return {
-						exe = "/usr/bin/node /usr/local/bin/prettier",  -- use global node version
+						exe = "/usr/bin/node /usr/local/bin/prettier", -- use global node version
 						args = args,
 						stdin = true,
 					}
@@ -306,13 +288,18 @@ require("packer").startup(function(use)
 					json5 = { prettier() },
 					yaml = { prettier() },
 					css = { prettier() },
+					scss = { prettier() },
 					vue = { prettier() },
 					svelte = { prettier() },
 					typescript = { prettier() },
 					-- markdown = { prettier() },
 					javascript = { prettier() },
 					lua = { exe_args_stdin("stylua", "-") },
-					rust = { exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021") },
+					-- rust = { exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021") },
+					rust = {
+                        -- exe_args_stdin("leptosfmt", "--stdin"),
+                        exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021"),
+                    },
 					toml = { exe_args_stdin("taplo", "fmt", "-") },
 					python = { exe_args_stdin("isort", "--profile", "black", "-"), exe_args_stdin("black", "-") },
 				},
@@ -552,6 +539,8 @@ require("packer").startup(function(use)
 	--- Html
 	vim.cmd([[au FileType html map <buffer> <leader>r :w\|!open %<cr>]])
 
+	vim.cmd([[au FileType javascript map <buffer> <leader>r :w\|!node %<cr>]])
+
 	--- Markdown
 	use({
 		"preservim/vim-markdown",
@@ -565,9 +554,9 @@ require("packer").startup(function(use)
        au FileType markdown setlocal spell
        au FileType markdown setlocal conceallevel=0
        au FileType markdown vnoremap g gq
-       au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
+       au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table -e footnotes % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
        au FileType markdown TSBufDisable highlight
-       ]])
+   ]])
 
 	--- Yaml
 	vim.cmd([[
@@ -664,6 +653,9 @@ require("packer").startup(function(use)
 								enable = false,
 							},
 						},
+                        -- rustfmt = {
+                        --     overrideCommand = { "leptosfmt", "--stdin", "--rustfmt" },
+                        -- },
 					},
 				},
 				capabilities = capabilities,
@@ -743,7 +735,7 @@ require("packer").startup(function(use)
 	use("edgedb/edgedb-vim")
 
 	use("Xuyuanp/sqlx-rs.nvim")
-    -- use("~/open/sqlx-rs.nvim")
+	-- use("~/open/sqlx-rs.nvim")
 
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
