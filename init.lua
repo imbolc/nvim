@@ -11,6 +11,7 @@ vim.opt.spelllang = "en,ru"
 
 -- Backup
 vim.opt.backup = false
+vim.opt.writebackup = false
 vim.opt.swapfile = false
 
 -- Line numbers
@@ -639,6 +640,7 @@ require("packer").startup(function(use)
 			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 			local lspconfig = require("lspconfig")
 			lspconfig.rust_analyzer.setup({
+				capabilities = capabilities,
 				on_attach = on_attach,
 				flags = {
 					debounce_text_changes = 150,
@@ -646,19 +648,18 @@ require("packer").startup(function(use)
 				settings = {
 					["rust-analyzer"] = {
 						cargo = {
-							allFeatures = true,
+							-- allFeatures = true,
 						},
-						completion = {
-							postfix = {
-								enable = false,
-							},
-						},
+						-- completion = {
+						-- 	postfix = {
+						-- 		enable = false,
+						-- 	},
+						-- },
                         -- rustfmt = {
                         --     overrideCommand = { "leptosfmt", "--stdin", "--rustfmt" },
                         -- },
 					},
 				},
-				capabilities = capabilities,
 			})
 			lspconfig.lua_ls.setup({
 				on_attach = on_attach,
@@ -683,6 +684,12 @@ require("packer").startup(function(use)
 			-- 	on_attach = on_attach,
 			-- })
 			lspconfig.vuels.setup({
+				on_attach = on_attach,
+			})
+			lspconfig.cssls.setup({
+				on_attach = on_attach,
+			})
+			lspconfig.sqlls.setup({
 				on_attach = on_attach,
 			})
 		end,
