@@ -37,10 +37,10 @@ vim.opt.inccommand = "split" -- preview substitutions
 vim.opt.gdefault = true
 
 -- Indentation
-vim.opt.tabstop = 4
-vim.opt.softtabstop = 4
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
+vim.opt.softtabstop = 4
+vim.opt.tabstop = 4
 
 -- --  Display tab characters
 -- vim.wo.list = true
@@ -298,9 +298,9 @@ require("packer").startup(function(use)
 					lua = { exe_args_stdin("stylua", "-") },
 					-- rust = { exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021") },
 					rust = {
-                        -- exe_args_stdin("leptosfmt", "--stdin"),
-                        exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021"),
-                    },
+						-- exe_args_stdin("leptosfmt", "--stdin"),
+						exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021"),
+					},
 					toml = { exe_args_stdin("taplo", "fmt", "-") },
 					python = { exe_args_stdin("isort", "--profile", "black", "-"), exe_args_stdin("black", "-") },
 				},
@@ -552,6 +552,7 @@ require("packer").startup(function(use)
 	})
 	vim.cmd([[
        au FileType markdown setlocal wrap
+       " au FileType markdown setlocal textwidth=80
        au FileType markdown setlocal spell
        au FileType markdown setlocal conceallevel=0
        au FileType markdown vnoremap g gq
@@ -648,16 +649,25 @@ require("packer").startup(function(use)
 				settings = {
 					["rust-analyzer"] = {
 						cargo = {
-							-- allFeatures = true,
+							allFeatures = true,
 						},
 						-- completion = {
 						-- 	postfix = {
 						-- 		enable = false,
 						-- 	},
 						-- },
-                        -- rustfmt = {
-                        --     overrideCommand = { "leptosfmt", "--stdin", "--rustfmt" },
-                        -- },
+						-- rustfmt = {
+						--     overrideCommand = { "leptosfmt", "--stdin", "--rustfmt" },
+						-- },
+						-- procMacro = {
+						--     ignored = {
+						--         leptos_macro = {
+						--             -- optional: --
+						--             -- "component",
+						--             "server",
+						--         },
+						--     },
+						-- },
 					},
 				},
 			})
@@ -742,7 +752,6 @@ require("packer").startup(function(use)
 	use("edgedb/edgedb-vim")
 
 	use("Xuyuanp/sqlx-rs.nvim")
-	-- use("~/open/sqlx-rs.nvim")
 
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
