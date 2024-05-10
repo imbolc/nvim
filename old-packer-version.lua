@@ -120,58 +120,120 @@ vim.api.nvim_exec(
 -- I use it with a minimal setup, but prefer a Ranger-like layout with files preview
 vim.keymap.set("n", "<leader>d", ":tabe %:p:h<cr>:echo 'D - delete | d - mkdir | % - new file'<cr>", { silent = true })
 
-vim.cmd([[au FileType lua map <buffer> <leader>r :w\| :source  %<cr>]])
-vim.cmd([[au FileType rust map <buffer> <leader>r :w\|! DATABASE_URL=postgres:/// rust-script %<cr>]])
-vim.cmd([[au FileType sh map <buffer> <leader>r :w\|!bash %<cr>]])
-vim.cmd([[au FileType python map <buffer> <leader>r :w\|!python3 %<cr>]])
-vim.cmd([[au FileType sql map <buffer> <leader>r :w\|!psql -f %<cr>]])
-vim.cmd([[au FileType html map <buffer> <leader>r :w\|!open %<cr>]])
-vim.cmd([[au FileType javascript map <buffer> <leader>r :w\|!node %<cr>]])
-vim.cmd([[
-    au FileType markdown setlocal wrap
-    " au FileType markdown setlocal textwidth=80
-    au FileType markdown setlocal spell
-    au FileType markdown setlocal conceallevel=0
-    au FileType markdown vnoremap g gq
-    au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table -e footnotes % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
-    au FileType markdown TSBufDisable highlight
-]])
-vim.cmd([[
-    au FileType yaml setlocal wrap
-    au FileType yaml setlocal spell
-]])
+-- Install packer
+local install_path = vim.fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
+local install_plugins = false
 
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
-	vim.fn.system({
-		"git",
-		"clone",
-		"--filter=blob:none",
-		"https://github.com/folke/lazy.nvim.git",
-		"--branch=stable", -- latest stable release
-		lazypath,
-	})
+if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
+	print("Installing packer...")
+	local packer_url = "https://github.com/wbthomason/packer.nvim"
+	vim.fn.system({ "git", "clone", "--depth", "1", packer_url, install_path })
+	print("Done.")
+
+	vim.cmd("packadd packer.nvim")
+	install_plugins = true
 end
-vim.opt.rtp:prepend(lazypath)
 
-require("lazy").setup({
-	"rust-lang/rust.vim",
-	"mechatroner/rainbow_csv",
-	"ConradIrwin/vim-bracketed-paste", -- Auto paste mode
-	"junegunn/vim-slash", -- Automatically remove search selection
-	"editorconfig/editorconfig-vim",
-	"ray-x/lsp_signature.nvim", --- Show function signature when you type
-	"onsails/lspkind-nvim",
-	"Xuyuanp/sqlx-rs.nvim",
-	-- "evanleck/vim-svelte",
-	-- "posva/vim-vue",
-	{
-		"NLKNguyen/papercolor-theme",
+require("packer").startup(function(use)
+	use("wbthomason/packer.nvim")
+
+	-- Treesitter
+	use({
+		"nvim-treesitter/nvim-treesitter",
+		run = ":TSUpdate",
 		config = function()
-			vim.cmd([[colorscheme PaperColor]])
+			require("nvim-treesitter.configs").setup({
+				ensure_installed = {
+					"bash",
+					"comment",
+					"css",
+					"html",
+					"javascript",
+					"json",
+					"json5",
+					"lua",
+					"markdown",
+					"markdown_inline",
+					"python",
+					"rust",
+					"svelte",
+					"toml",
+					"typescript",
+					"vue",
+					"yaml",
+					"query", -- treesitter
+					"scss",
+					"sql",
+				},
+				highlight = {
+					enable = true,
+					-- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+					-- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
+					-- Using this option may slow down your editor, and you may see some duplicate highlights.
+					-- Instead of true it can also be a list of languages
+					additional_vim_regex_highlighting = false,
+				},
+				indent = {
+					enable = true,
+				},
+			})
 		end,
-	},
-	{
+	})
+
+	-- Json5
+	use("GutenYe/json5.vim")
+	vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
+
+	-- Joshuto (ranger clone)
+	use("theniceboy/joshuto.nvim")
+	vim.keymap.set("n", "<leader>d", ":lua require'joshuto'.joshuto({ edit_in_tab = true })<cr>", { silent = true })
+
+	-- Rust
+	use("rust-lang/rust.vim")
+	-- Enable SQL highlighting inside Rust sqlx string literals
+	-- vim.cmd([[
+	--      autocmd FileType rust :lua << EOF
+	--        vim.cmd("echo 'Custom Rust syntax file loaded'")
+	--        vim.cmd("syntax include @Sql syntax/sql.vim")
+	--        vim.cmd("syntax region sqlxSQL start=+\\b(sqlx::query!\\?)+ end=+\"+ contains=@Sql")
+	--      EOF
+	--    ]])
+	vim.cmd([[
+        au FileType rust map <buffer> <leader>r :w\|! DATABASE_URL=postgres:/// rust-script %<cr>
+        " au FileType rust setlocal spell
+    ]])
+
+	-- use({ "alopatindev/cargo-limit", run = "cargo install cargo-limit nvim-send" })
+
+	vim.cmd([[
+        au FileType lua map <buffer> <leader>r :w\| :source  %<cr>
+    ]])
+
+	-- Tables
+	use("dhruvasagar/vim-table-mode")
+	vim.g.table_mode_corner = "|" -- markdown-compatible corners
+
+	-- CSV
+	use("mechatroner/rainbow_csv")
+
+	-- Auto paste mode
+	use("ConradIrwin/vim-bracketed-paste")
+
+	-- Tmux splits integration
+	use("christoomey/vim-tmux-navigator")
+
+	-- Bash
+	vim.cmd([[au FileType sh map <buffer> <leader>r :w\|!bash %<cr>]])
+
+	-- Python
+	vim.cmd([[au FileType python map <buffer> <leader>r :w\|!python3 %<cr>]])
+
+	-- Commenting
+	use({
+		"JoosepAlviste/nvim-ts-context-commentstring",
+		requires = "nvim-treesitter/nvim-treesitter",
+	})
+	use({
 		"numToStr/Comment.nvim",
 		config = function()
 			require("Comment").setup()
@@ -179,40 +241,22 @@ require("lazy").setup({
 			ft.sailfish = "<%#%s%>"
 			ft.json5 = "// %s"
 		end,
-	},
-	{
-		-- Ranger like file picker
-		"theniceboy/joshuto.nvim",
-		config = function()
-			vim.keymap.set(
-				"n",
-				"<leader>d",
-				":lua require'joshuto'.joshuto({ edit_in_tab = true })<cr>",
-				{ silent = true }
-			)
-		end,
-	},
-	{
-		-- Tables
-		"dhruvasagar/vim-table-mode",
-		config = function()
-			vim.g.table_mode_corner = "|" -- markdown-compatible corners
-		end,
-	},
-	{
-		"GutenYe/json5.vim",
-		config = function()
-			vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
-		end,
-	},
-	{
-		"saecki/crates.nvim",
-		event = { "BufRead Cargo.toml" },
-		config = function()
-			require("crates").setup()
-		end,
-	},
-	{
+	})
+
+	-- use({
+	-- 	"ggandor/leap.nvim",
+	-- 	config = function()
+	-- 		require("leap").add_default_mappings()
+	-- 	end,
+	-- })
+
+	use("junegunn/vim-slash") -- automatically remove search selection
+
+	-- install https://github.com/grwlf/xkb-switch
+	-- use("lyokha/vim-xkbswitch") -- automatically switch layout back leaving insert mode
+	-- vim.g.XkbSwitchEnabled = 1
+
+	use({
 		"mhartington/formatter.nvim",
 		config = function()
 			local function prettier(...)
@@ -272,57 +316,35 @@ require("lazy").setup({
 				true
 			)
 		end,
-	},
-	{
-		"nvim-treesitter/nvim-treesitter",
-		build = ":TSUpdate",
+	})
+
+	use({
+		"NLKNguyen/papercolor-theme",
 		config = function()
-			require("nvim-treesitter.configs").setup({
-				ensure_installed = {
-					"bash",
-					"comment",
-					"css",
-					"html",
-					"javascript",
-					"json",
-					"json5",
-					"lua",
-					"markdown",
-					"markdown_inline",
-					"python",
-					"rust",
-					"svelte",
-					"toml",
-					"typescript",
-					"vue",
-					"yaml",
-					"query", -- treesitter
-					"scss",
-					"sql",
-				},
-				highlight = {
-					enable = true,
-					-- Setting this to true will run `:h syntax` and tree-sitter at the same time.
-					-- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
-					-- Using this option may slow down your editor, and you may see some duplicate highlights.
-					-- Instead of true it can also be a list of languages
-					additional_vim_regex_highlighting = false,
-				},
-				indent = {
-					enable = true,
-				},
-			})
+			vim.cmd([[colorscheme PaperColor]])
 		end,
-	},
-	{
-		"JoosepAlviste/nvim-ts-context-commentstring",
-		dependencies = "nvim-treesitter/nvim-treesitter",
-	},
-	{
+	})
+	use("clinstid/eink.vim")
+
+	-- Show version updates in `Cargo.toml`
+	use({
+		"saecki/crates.nvim",
+		tag = "v0.1.0",
+		event = { "BufRead Cargo.toml" },
+		requires = { "nvim-lua/plenary.nvim" },
+		config = function()
+			require("crates").setup()
+		end,
+	})
+
+	-- Telescope
+	use({
 		"nvim-telescope/telescope.nvim",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
+		requires = "nvim-lua/plenary.nvim",
+		module = "telescope",
+		after = {
 			"telescope-fzf-native.nvim",
+			"telescope-packer.nvim",
 		},
 		config = function()
 			local telescope = require("telescope")
@@ -347,27 +369,25 @@ require("lazy").setup({
 			})
 
 			telescope.load_extension("fzf")
-
-			vim.keymap.set(
-				"n",
-				"<leader>f",
-				"<cmd>lua require('telescope.builtin').find_files()<cr>",
-				{ silent = true }
-			)
-			vim.keymap.set("n", "<leader>g", "<cmd>lua require('telescope.builtin').live_grep()<cr>", { silent = true })
-			vim.keymap.set(
-				"n",
-				"<leader>n",
-				"<cmd>lua require('telescope.builtin').find_files{search_dirs={'~/Documents/notes'}}<cr>",
-				{ silent = true }
-			)
+			telescope.load_extension("packer")
 		end,
-	},
-	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
-	{
-		--- Autocompletion
+	})
+	use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
+	use("nvim-telescope/telescope-packer.nvim")
+
+	vim.keymap.set("n", "<leader>f", "<cmd>lua require('telescope.builtin').find_files()<cr>", { silent = true })
+	vim.keymap.set("n", "<leader>g", "<cmd>lua require('telescope.builtin').live_grep()<cr>", { silent = true })
+	vim.keymap.set(
+		"n",
+		"<leader>n",
+		"<cmd>lua require('telescope.builtin').find_files{search_dirs={'~/Documents/notes'}}<cr>",
+		{ silent = true }
+	)
+
+	--- Autocompletion
+	use({
 		"hrsh7th/nvim-cmp",
-		dependencies = {
+		requires = {
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-nvim-lua",
 			"hrsh7th/cmp-buffer",
@@ -501,16 +521,75 @@ require("lazy").setup({
 				},
 			})
 		end,
-	},
-	"L3MON4D3/LuaSnip", -- TODO: remove or configure
-	{
+	})
+	vim.cmd("au FileType toml lua require('cmp').setup.buffer { sources = { { name = 'crates' } } }")
+	use("L3MON4D3/LuaSnip")
+
+	use("editorconfig/editorconfig-vim")
+	use("evanleck/vim-svelte")
+
+	--- Grep and replacement in multiple files: lua require('spectre').open()
+	use({
+		"windwp/nvim-spectre",
+		requires = { "nvim-lua/plenary.nvim" },
+	})
+
+	--- Postgres
+	vim.cmd([[au FileType sql map <buffer> <leader>r :w\|!psql -f %<cr>]])
+
+	--- Html
+	vim.cmd([[au FileType html map <buffer> <leader>r :w\|!open %<cr>]])
+
+	vim.cmd([[au FileType javascript map <buffer> <leader>r :w\|!node %<cr>]])
+
+	--- Markdown
+	use({
 		"preservim/vim-markdown",
-		dependencies = { "godlygeek/tabular" },
+		requires = { "godlygeek/tabular" },
 		config = function()
 			vim.g.vim_markdown_folding_disabled = 1
 		end,
-	},
-	{
+	})
+	vim.cmd([[
+       au FileType markdown setlocal wrap
+       " au FileType markdown setlocal textwidth=80
+       au FileType markdown setlocal spell
+       au FileType markdown setlocal conceallevel=0
+       au FileType markdown vnoremap g gq
+       au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table -e footnotes % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
+       au FileType markdown TSBufDisable highlight
+   ]])
+
+	--- Yaml
+	vim.cmd([[
+       au FileType yaml setlocal wrap
+       au FileType yaml setlocal spell
+   ]])
+
+	--- Vue
+	use("posva/vim-vue")
+
+	--- Jinja
+	use("Glench/Vim-Jinja2-Syntax")
+
+	--- Sailfish
+	vim.cmd("luafile ~/.config/nvim/plugin/packer_compiled.lua") -- packer `rtp` doesn't work without this
+	use({ "rust-sailfish/sailfish", rtp = "syntax/vim" })
+
+	--- Distraction free writing
+	use({
+		"folke/zen-mode.nvim",
+		config = function()
+			require("zen-mode").setup({
+				window = {
+					width = 80,
+				},
+			})
+		end,
+	})
+
+	--- LSP
+	use({
 		"neovim/nvim-lspconfig",
 		config = function()
 			vim.lsp.handlers["textDocument/publishDiagnostics"] =
@@ -624,17 +703,17 @@ require("lazy").setup({
 				on_attach = on_attach,
 			})
 		end,
-	},
-	{
+	})
+	use({
 		"williamboman/mason.nvim",
-		build = ":MasonUpdate",
+		run = ":MasonUpdate",
 		config = function()
 			require("mason").setup()
 		end,
-	},
-	{
+	})
+	use({
 		"williamboman/mason-lspconfig.nvim",
-		dependencies = {
+		requires = {
 			"williamboman/mason.nvim",
 			"neovim/nvim-lspconfig",
 		},
@@ -659,13 +738,32 @@ require("lazy").setup({
 				-- automatic_installation = true,
 			})
 		end,
-	},
-	{
-		--- LSP progress at the bottom-right
-		"j-hui/fidget.nvim",
-		tag = "v1.4.1",
-		config = function()
-			require("fidget").setup()
-		end,
-	},
-})
+	})
+
+	use("nvim-treesitter/playground")
+
+	--- LSP progress at the bottom-right
+	use({ "j-hui/fidget.nvim", tag = "legacy", config = "require'fidget'.setup{}" })
+
+	--- Show function signature when you type
+	use("ray-x/lsp_signature.nvim")
+	use("onsails/lspkind-nvim")
+
+	use("edgedb/edgedb-vim")
+
+	use("Xuyuanp/sqlx-rs.nvim")
+
+	-- Automatically set up your configuration after cloning packer.nvim
+	-- Put this at the end after all plugins
+	if install_plugins then
+		require("packer").sync()
+	end
+
+	-- Automatically recompile plugins, on the init file change
+	vim.cmd([[
+        augroup packer_user_config
+        autocmd!
+        autocmd BufWritePost init.lua source <afile> | PackerCompile
+        augroup end
+    ]])
+end)
