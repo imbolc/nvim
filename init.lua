@@ -159,7 +159,6 @@ require("lazy").setup({
 	"mechatroner/rainbow_csv",
 	"ConradIrwin/vim-bracketed-paste", -- Auto paste mode
 	"junegunn/vim-slash", -- Automatically remove search selection
-	"editorconfig/editorconfig-vim",
 	"ray-x/lsp_signature.nvim", --- Show function signature when you type
 	"onsails/lspkind-nvim",
 	"Xuyuanp/sqlx-rs.nvim",
@@ -213,66 +212,89 @@ require("lazy").setup({
 		end,
 	},
 	{
-		"mhartington/formatter.nvim",
+		-- Formatters
+		"nvimdev/guard.nvim",
+		dependencies = {
+			"nvimdev/guard-collection",
+		},
 		config = function()
-			local function prettier(...)
-				local args = { ... }
-				return function()
-					table.insert(args, "--stdin-filepath")
-					table.insert(args, vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)))
-					return {
-						exe = "/usr/bin/node /usr/local/bin/prettier", -- use global node version
-						args = args,
-						stdin = true,
-					}
-				end
-			end
-			local function exe_args_stdin(exe, ...)
-				local args = { ... }
-				return function()
-					-- print("args=", vim.inspect(args))
-					return {
-						exe = exe,
-						args = args,
-						stdin = true,
-					}
-				end
-			end
-			require("formatter").setup({
-				filetype = {
-					-- html = { prettier("--tab-width", 4) }, -- doesn't work with jinja
-					json = { prettier() },
-					json5 = { prettier() },
-					yaml = { prettier() },
-					css = { prettier() },
-					scss = { prettier() },
-					vue = { prettier() },
-					svelte = { prettier() },
-					typescript = { prettier() },
-					-- markdown = { prettier() },
-					javascript = { prettier() },
-					lua = { exe_args_stdin("stylua", "-") },
-					-- rust = { exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021") },
-					rust = {
-						-- exe_args_stdin("leptosfmt", "--stdin"),
-						exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021"),
-					},
-					toml = { exe_args_stdin("taplo", "fmt", "-") },
-					python = { exe_args_stdin("isort", "--profile", "black", "-"), exe_args_stdin("black", "-") },
-				},
+			local ft = require("guard.filetype")
+			local fm = require("guard-collection.formatter")
+
+			ft("lua"):fmt(fm.stylua)
+			ft("rust"):fmt(fm.rustfmt)
+			ft("css,html,javascript,json,json5,vue,yaml"):fmt(fm.prettier)
+			ft("toml"):fmt(fm.taplo)
+			ft("python"):fmt({
+				cmd = "isort",
+				args = { "--profile", "black", "-" },
+				stdin = true,
 			})
-			-- autocmd BufWritePost *.rs,*.py,*.html,*.lua FormatWrite
-			vim.api.nvim_exec(
-				[[
-	               augroup FormatAutogroup
-	               autocmd!
-	               autocmd BufWritePost * silent! FormatWrite
-	               augroup END
-	               ]],
-				true
-			)
+
+			require("guard").setup({
+				fmt_on_save = true,
+				lsp_as_default_formatter = true,
+			})
 		end,
 	},
+	-- {
+	-- 	"mhartington/formatter.nvim",
+	-- 	config = function()
+	-- 		local function prettier(...)
+	-- 			local args = { ... }
+	-- 			return function()
+	-- 				table.insert(args, "--stdin-filepath")
+	-- 				table.insert(args, vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)))
+	-- 				return {
+	-- 					exe = "/usr/bin/node /usr/local/bin/prettier", -- use global node version
+	-- 					args = args,
+	-- 					stdin = true,
+	-- 				}
+	-- 			end
+	-- 		end
+	-- 		local function exe_args_stdin(exe, ...)
+	-- 			local args = { ... }
+	-- 			return function()
+	-- 				-- print("args=", vim.inspect(args))
+	-- 				return {
+	-- 					exe = exe,
+	-- 					args = args,
+	-- 					stdin = true,
+	-- 				}
+	-- 			end
+	-- 		end
+	-- 		require("formatter").setup({
+	-- 			filetype = {
+	-- 				-- html = { prettier("--tab-width", 4) }, -- doesn't work with jinja
+	-- 				json = { prettier() },
+	-- 				json5 = { prettier() },
+	-- 				yaml = { prettier() },
+	-- 				css = { prettier() },
+	-- 				scss = { prettier() },
+	-- 				vue = { prettier() },
+	-- 				svelte = { prettier() },
+	-- 				typescript = { prettier() },
+	-- 				-- markdown = { prettier() },
+	-- 				javascript = { prettier() },
+	-- 				lua = { exe_args_stdin("stylua", "-") },
+	-- 				rust = { exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021") },
+	-- 				-- rust = { exe_args_stdin("leptosfmt", "--stdin") },
+	-- 				toml = { exe_args_stdin("taplo", "fmt", "-") },
+	-- 				python = { exe_args_stdin("isort", "--profile", "black", "-"), exe_args_stdin("black", "-") },
+	-- 			},
+	-- 		})
+	-- 		-- autocmd BufWritePost *.rs,*.py,*.html,*.lua FormatWrite
+	-- 		vim.api.nvim_exec(
+	-- 			[[
+	--                augroup FormatAutogroup
+	--                autocmd!
+	--                autocmd BufWritePost * silent! FormatWrite
+	--                augroup END
+	--                ]],
+	-- 			true
+	-- 		)
+	-- 	end,
+	-- },
 	{
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
@@ -655,6 +677,7 @@ require("lazy").setup({
 					"volar",
 					"vuels",
 					"yamlls",
+					-- "stylua", -- TODO: ?
 				},
 				-- automatic_installation = true,
 			})
