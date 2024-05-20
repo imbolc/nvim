@@ -180,18 +180,6 @@ require("lazy").setup({
 		end,
 	},
 	{
-		-- Ranger like file picker
-		"theniceboy/joshuto.nvim",
-		config = function()
-			vim.keymap.set(
-				"n",
-				"<leader>d",
-				":lua require'joshuto'.joshuto({ edit_in_tab = true })<cr>",
-				{ silent = true }
-			)
-		end,
-	},
-	{
 		-- Tables
 		"dhruvasagar/vim-table-mode",
 		config = function()
@@ -209,6 +197,16 @@ require("lazy").setup({
 		event = { "BufRead Cargo.toml" },
 		config = function()
 			require("crates").setup()
+		end,
+	},
+	{
+		"stevearc/oil.nvim",
+		config = function()
+			require("oil").setup({
+				view_options = {
+					show_hidden = true,
+				},
+			})
 		end,
 	},
 	{
@@ -344,7 +342,6 @@ require("lazy").setup({
 		"nvim-telescope/telescope.nvim",
 		dependencies = {
 			"nvim-lua/plenary.nvim",
-			"telescope-fzf-native.nvim",
 		},
 		config = function()
 			local telescope = require("telescope")
@@ -356,19 +353,14 @@ require("lazy").setup({
 					mappings = {
 						i = {
 							["<cr>"] = actions.select_tab,
+							["<C-o>"] = function(prompt_bufnr)
+								actions.close(prompt_bufnr)
+								require("oil").open()
+							end,
 						},
 					},
 				},
-				extensions = {
-					fzf = {
-						fuzzy = true,
-						-- override_generic_sorter = true,
-						-- override_file_sorter = true,
-					},
-				},
 			})
-
-			telescope.load_extension("fzf")
 
 			vim.keymap.set(
 				"n",
@@ -376,16 +368,14 @@ require("lazy").setup({
 				"<cmd>lua require('telescope.builtin').find_files()<cr>",
 				{ silent = true }
 			)
-			vim.keymap.set("n", "<leader>g", "<cmd>lua require('telescope.builtin').live_grep()<cr>", { silent = true })
 			vim.keymap.set(
 				"n",
 				"<leader>n",
-				"<cmd>lua require('telescope.builtin').find_files{search_dirs={'~/Documents/notes'}}<cr>",
+				"<cmd>lua require('telescope.builtin').find_files({search_dirs={'~/Documents/notes'}})<cr>",
 				{ silent = true }
 			)
 		end,
 	},
-	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
 	{
 		--- Autocompletion
 		"hrsh7th/nvim-cmp",
