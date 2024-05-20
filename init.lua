@@ -140,6 +140,14 @@ vim.cmd([[
     au FileType yaml setlocal wrap
     au FileType yaml setlocal spell
 ]])
+vim.api.nvim_create_autocmd({ "FileType" }, {
+	desc = "Force commentstring to include spaces",
+	-- group = ...,
+	callback = function(event)
+		local cs = vim.bo[event.buf].commentstring
+		vim.bo[event.buf].commentstring = cs:gsub("(%S)%%s", "%1 %%s"):gsub("%%s(%S)", "%%s %1")
+	end,
+})
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -167,16 +175,7 @@ require("lazy").setup({
 	{
 		"NLKNguyen/papercolor-theme",
 		config = function()
-			vim.cmd([[colorscheme PaperColor]])
-		end,
-	},
-	{
-		"numToStr/Comment.nvim",
-		config = function()
-			require("Comment").setup()
-			local ft = require("Comment.ft")
-			ft.sailfish = "<%#%s%>"
-			ft.json5 = "// %s"
+			-- vim.cmd([[colorscheme PaperColor]])
 		end,
 	},
 	{
@@ -333,10 +332,6 @@ require("lazy").setup({
 				},
 			})
 		end,
-	},
-	{
-		"JoosepAlviste/nvim-ts-context-commentstring",
-		dependencies = "nvim-treesitter/nvim-treesitter",
 	},
 	{
 		"nvim-telescope/telescope.nvim",
@@ -548,7 +543,6 @@ require("lazy").setup({
 				-- See `:help vim.lsp.*` for documentation on any of the below functions
 				map("n", "gD", "<Cmd>lua vim.lsp.buf.declaration()<CR>", opts)
 				map("n", "gd", "<Cmd>lua vim.lsp.buf.definition()<CR>", opts)
-				map("n", "K", "<Cmd>lua vim.lsp.buf.hover()<CR>", opts)
 				map("n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", opts)
 				map("n", "<C-k>", "<cmd>lua vim.lsp.buf.signature_help()<CR>", opts)
 				map("n", "<space>D", "<cmd>lua vim.lsp.buf.type_definition()<CR>", opts)
@@ -556,8 +550,6 @@ require("lazy").setup({
 				map("n", "<space>a", "<cmd>lua vim.lsp.buf.code_action()<CR>", opts)
 				map("n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>", opts)
 				map("n", "<space>e", "<cmd>lua vim.diagnostic.open_float()<CR>", opts)
-				map("n", "[d", "<cmd>lua vim.diagnostic.goto_prev()<CR>", opts)
-				map("n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>", opts)
 				map("n", "<space>q", "<cmd>lua vim.diagnostic.set_loclist()<CR>", opts)
 				map("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
 
