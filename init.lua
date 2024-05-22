@@ -72,7 +72,6 @@ vim.keymap.set("n", "Q", "<nop>", { silent = true })
 vim.keymap.set("n", "q:", "<nop>", { silent = true })
 
 -- Colorscheme
-vim.opt.termguicolors = true
 vim.opt.background = "light"
 
 -- Set completeopt to have a better completion experience
@@ -172,12 +171,22 @@ require("lazy").setup({
 	"Xuyuanp/sqlx-rs.nvim",
 	-- "evanleck/vim-svelte",
 	-- "posva/vim-vue",
+	-- {
+	-- 	"NLKNguyen/papercolor-theme",
+	-- 	-- config = function()
+	-- 	-- 	vim.cmd([[colorscheme PaperColor]])
+	-- 	-- end,
+	-- },
 	{
-		"NLKNguyen/papercolor-theme",
+		"folke/tokyonight.nvim",
 		config = function()
-			-- vim.cmd([[colorscheme PaperColor]])
+			require("tokyonight").setup({
+				-- transparent = true,
+			})
+			vim.cmd([[colorscheme tokyonight]])
 		end,
 	},
+	-- { "EdenEast/nightfox.nvim" },
 	{
 		-- Tables
 		"dhruvasagar/vim-table-mode",
@@ -565,6 +574,7 @@ require("lazy").setup({
 
 			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 			local lspconfig = require("lspconfig")
+			lspconfig.typos_lsp.setup({})
 			lspconfig.rust_analyzer.setup({
 				capabilities = capabilities,
 				on_attach = on_attach,
@@ -630,6 +640,7 @@ require("lazy").setup({
 		end,
 	},
 	{
+		-- Installer for LSP servers, linters, etc
 		"williamboman/mason.nvim",
 		build = ":MasonUpdate",
 		config = function()
@@ -637,6 +648,7 @@ require("lazy").setup({
 		end,
 	},
 	{
+		-- Automatic installation of LSP servers, linters, etc
 		"williamboman/mason-lspconfig.nvim",
 		dependencies = {
 			"williamboman/mason.nvim",
@@ -644,8 +656,10 @@ require("lazy").setup({
 		},
 		config = function()
 			require("mason-lspconfig").setup({
+				-- List of available servers: https://github.com/williamboman/mason-lspconfig.nvim?tab=readme-ov-file#available-lsp-servers
 				ensure_installed = {
 					"bashls",
+					"biome",
 					"cssls",
 					"jsonls",
 					"lua_ls",
@@ -656,12 +670,13 @@ require("lazy").setup({
 					"sqlls",
 					"svelte",
 					"taplo",
+					"typos_lsp",
 					"volar",
 					"vuels",
 					"yamlls",
 					-- "stylua", -- TODO: ?
 				},
-				-- automatic_installation = true,
+				automatic_installation = true,
 			})
 		end,
 	},
