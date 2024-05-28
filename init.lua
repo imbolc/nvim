@@ -701,9 +701,14 @@ require("lazy").setup({
 	},
 })
 
-local function open_todo()
+local function open_todo(in_split, show_errors)
 	local possible_files = { ".todo", ".todo.txt", ".todo.md", "var/todo.txt", "var/todo.md" }
 	local existing_files = {}
+	local function error(msg)
+		if show_errors then
+			vim.notify(msg, vim.log.levels.ERROR)
+		end
+	end
 
 	for _, filename in ipairs(possible_files) do
 		if vim.fn.filereadable(filename) == 1 then
@@ -712,11 +717,20 @@ local function open_todo()
 	end
 
 	if #existing_files == 0 then
-		vim.notify("No TODO file found, tried:\n" .. table.concat(possible_files, "\n"), vim.log.levels.ERROR)
+		error("No TODO file found, tried:\n" .. table.concat(possible_files, "\n"))
 	elseif #existing_files > 1 then
-		vim.notify("Multiple TODO files found:\n" .. table.concat(existing_files, "\n"), vim.log.levels.ERROR)
+		error("Multiple TODO files found:\n" .. table.concat(existing_files, "\n"))
 	else
-		vim.cmd("vsplit " .. existing_files[1])
+		vim.cmd((in_split and "vsplit" or "edit") .. " " .. existing_files[1])
 	end
 end
-vim.api.nvim_create_user_command("Todo", open_todo, {})
+vim.api.nvim_create_user_command("Todo", function()
+	open_todo(true, true)
+end, {})
+vim.api.nvim_create_autocmd("VimEnter", {
+	callback = function()
+		if vim.fn.argc() == 0 then
+			open_todo(false, false)
+		end
+	end,
+})
