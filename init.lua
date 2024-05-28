@@ -183,10 +183,15 @@ require("lazy").setup({
 			require("tokyonight").setup({
 				-- transparent = true,
 			})
-			vim.cmd([[colorscheme tokyonight]])
+			-- vim.cmd([[colorscheme tokyonight]])
 		end,
 	},
-	-- { "EdenEast/nightfox.nvim" },
+	{
+		"EdenEast/nightfox.nvim",
+		config = function()
+			vim.cmd([[colorscheme dayfox]])
+		end,
+	},
 	{
 		-- Tables
 		"dhruvasagar/vim-table-mode",
@@ -228,7 +233,7 @@ require("lazy").setup({
 			local fm = require("guard-collection.formatter")
 
 			ft("lua"):fmt(fm.stylua)
-			ft("rust"):fmt(fm.rustfmt)
+			ft("rust"):fmt(fm.rustfmt_nightly)
 			ft("css,html,javascript,json,json5,vue,yaml"):fmt(fm.prettier)
 			ft("toml"):fmt(fm.taplo)
 			ft("python"):fmt({
@@ -574,7 +579,13 @@ require("lazy").setup({
 
 			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 			local lspconfig = require("lspconfig")
+
 			lspconfig.typos_lsp.setup({})
+			-- lspconfig.biome.setup({
+			-- 	single_file_support = true,
+			-- 	capabilities = capabilities,
+			-- 	on_attach = on_attach,
+			-- })
 			lspconfig.rust_analyzer.setup({
 				capabilities = capabilities,
 				on_attach = on_attach,
@@ -658,9 +669,9 @@ require("lazy").setup({
 			require("mason-lspconfig").setup({
 				-- List of available servers: https://github.com/williamboman/mason-lspconfig.nvim?tab=readme-ov-file#available-lsp-servers
 				ensure_installed = {
-					"bashls",
-					"biome",
-					"cssls",
+					"bashls", -- bash
+					-- "biome", -- js eslint compatible
+					"cssls", -- css
 					"jsonls",
 					"lua_ls",
 					"marksman",
@@ -670,7 +681,7 @@ require("lazy").setup({
 					"sqlls",
 					"svelte",
 					"taplo",
-					"typos_lsp",
+					"typos_lsp", -- cargo typos-cli
 					"volar",
 					"vuels",
 					"yamlls",
@@ -689,3 +700,23 @@ require("lazy").setup({
 		end,
 	},
 })
+
+local function open_todo()
+	local possible_files = { ".todo", ".todo.txt", ".todo.md", "var/todo.txt", "var/todo.md" }
+	local existing_files = {}
+
+	for _, filename in ipairs(possible_files) do
+		if vim.fn.filereadable(filename) == 1 then
+			table.insert(existing_files, filename)
+		end
+	end
+
+	if #existing_files == 0 then
+		vim.notify("No TODO file found, tried:\n" .. table.concat(possible_files, "\n"), vim.log.levels.ERROR)
+	elseif #existing_files > 1 then
+		vim.notify("Multiple TODO files found:\n" .. table.concat(existing_files, "\n"), vim.log.levels.ERROR)
+	else
+		vim.cmd("vsplit " .. existing_files[1])
+	end
+end
+vim.api.nvim_create_user_command("Todo", open_todo, {})
