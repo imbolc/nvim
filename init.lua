@@ -699,9 +699,16 @@ require("lazy").setup({
 			require("fidget").setup()
 		end,
 	},
+	{
+		--- Replace in multiple files, use `:Spectre` command
+		"nvim-pack/nvim-spectre",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+		},
+	},
 })
 
-local function open_todo(in_split, show_errors)
+function OpenTodo(in_split, show_errors)
 	local possible_files = { ".todo", ".todo.txt", ".todo.md", "var/todo.txt", "var/todo.md" }
 	local existing_files = {}
 	local function error(msg)
@@ -721,16 +728,16 @@ local function open_todo(in_split, show_errors)
 	elseif #existing_files > 1 then
 		error("Multiple TODO files found:\n" .. table.concat(existing_files, "\n"))
 	else
-		vim.cmd((in_split and "vsplit" or "edit") .. " " .. existing_files[1])
+		vim.cmd((in_split and "split" or "edit") .. " " .. existing_files[1])
 	end
 end
-vim.api.nvim_create_user_command("Todo", function()
-	open_todo(true, true)
-end, {})
+
+vim.keymap.set("n", "<leader>t", "<cmd>lua OpenTodo(true, true)<cr>", { silent = true })
+
 vim.api.nvim_create_autocmd("VimEnter", {
 	callback = function()
 		if vim.fn.argc() == 0 then
-			open_todo(false, false)
+			OpenTodo(false, false)
 		end
 	end,
 })
