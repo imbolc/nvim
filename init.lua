@@ -1,6 +1,7 @@
 -- sudo npm install -g prettier lua-fmt yaml-unist-parser
 -- pip3 install black isort ueberzug
 -- cargo install taplo-cli stylua comrak rust-script
+-- sudo apt install shfmt
 
 vim.g.mapleader = ","
 
@@ -232,6 +233,7 @@ require("lazy").setup({
 			local ft = require("guard.filetype")
 			local fm = require("guard-collection.formatter")
 
+			ft("sh"):fmt(fm.shfmt)
 			ft("lua"):fmt(fm.stylua)
 			ft("rust"):fmt(fm.rustfmt_nightly)
 			ft("css,html,javascript,json,json5,vue,yaml"):fmt(fm.prettier)
@@ -580,6 +582,7 @@ require("lazy").setup({
 			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 			local lspconfig = require("lspconfig")
 
+			lspconfig.bashls.setup({})
 			lspconfig.typos_lsp.setup({})
 			-- lspconfig.biome.setup({
 			-- 	single_file_support = true,
@@ -645,9 +648,6 @@ require("lazy").setup({
 			lspconfig.cssls.setup({
 				on_attach = on_attach,
 			})
-			lspconfig.sqlls.setup({
-				on_attach = on_attach,
-			})
 		end,
 	},
 	{
@@ -678,7 +678,6 @@ require("lazy").setup({
 					"pyright",
 					"quick_lint_js",
 					"rust_analyzer",
-					"sqlls",
 					"svelte",
 					"taplo",
 					"typos_lsp", -- cargo typos-cli
