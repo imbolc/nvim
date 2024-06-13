@@ -221,6 +221,20 @@ require("lazy").setup({
 					show_hidden = true,
 				},
 			})
+
+			-- A workaround to automatically open preview, until the feature is added
+			-- https://github.com/stevearc/oil.nvim/issues/339
+			vim.keymap.set("n", "<leader>d", function()
+				local oil = require("oil")
+				oil.open()
+				-- Wait until oil has opened, for a maximum of 1 second.
+				vim.wait(1000, function()
+					return oil.get_cursor_entry() ~= nil
+				end)
+				if oil.get_cursor_entry() then
+					oil.open_preview()
+				end
+			end)
 		end,
 	},
 	{
