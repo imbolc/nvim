@@ -223,8 +223,9 @@ require("lazy").setup({
 			vim.keymap.set("n", "<leader>d", function()
 				local oil = require("oil")
 
-				vim.cmd("tabnew")
 				local cur_dir = vim.fn.fnamemodify(vim.fn.expand("%:p"), ":h")
+				vim.cmd("tabnew " .. cur_dir)
+
 				oil.open(cur_dir)
 
 				-- Wait until oil has opened, for a maximum of 1 second.
