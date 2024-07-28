@@ -50,6 +50,13 @@ vim.opt.tabstop = 4
 -- Decrease update time
 vim.opt.updatetime = 100
 
+-- Treesitter based folding
+vim.opt.foldenable = true
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 99
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+
 -- Don't lose selection when shifting
 vim.keymap.set("x", "<", "<gv", { silent = true })
 vim.keymap.set("x", ">", ">gv", { silent = true })
@@ -172,27 +179,16 @@ require("lazy").setup({
 	"Xuyuanp/sqlx-rs.nvim",
 	-- "evanleck/vim-svelte",
 	-- "posva/vim-vue",
-	-- {
-	-- 	"NLKNguyen/papercolor-theme",
-	-- 	-- config = function()
-	-- 	-- 	vim.cmd([[colorscheme PaperColor]])
-	-- 	-- end,
-	-- },
 	{
-		"folke/tokyonight.nvim",
+		"pappasam/papercolor-theme-slim",
 		config = function()
-			require("tokyonight").setup({
-				-- transparent = true,
-			})
-			-- vim.cmd([[colorscheme tokyonight]])
+			vim.cmd([[colorscheme PaperColorSlim]])
 		end,
 	},
-	{
-		"EdenEast/nightfox.nvim",
-		config = function()
-			vim.cmd([[colorscheme dayfox]])
-		end,
-	},
+	{ "EdenEast/nightfox.nvim" },
+	{ "projekt0n/github-nvim-theme" },
+	{ "NLKNguyen/papercolor-theme" },
+	{ "folke/tokyonight.nvim" },
 	{
 		-- Tables
 		"dhruvasagar/vim-table-mode",
@@ -226,7 +222,12 @@ require("lazy").setup({
 			-- https://github.com/stevearc/oil.nvim/issues/339
 			vim.keymap.set("n", "<leader>d", function()
 				local oil = require("oil")
-				oil.open()
+
+				local cur_dir = vim.fn.fnamemodify(vim.fn.expand("%:p"), ":h")
+				vim.cmd("tabnew")
+				vim.cmd("lcd " .. vim.fn.fnameescape(cur_dir))
+
+				oil.open(cur_dir)
 				-- Wait until oil has opened, for a maximum of 1 second.
 				vim.wait(1000, function()
 					return oil.get_cursor_entry() ~= nil
@@ -247,16 +248,20 @@ require("lazy").setup({
 			local ft = require("guard.filetype")
 			local fm = require("guard-collection.formatter")
 
+			-- Use global version of prettier
+			local global_prettier = {
+				cmd = "/usr/bin/nodejs",
+				args = { "/usr/local/bin/prettier", "--stdin-filepath" },
+				fname = true,
+				stdin = true,
+			}
+
 			ft("sh"):fmt(fm.shfmt)
 			ft("lua"):fmt(fm.stylua)
 			ft("rust"):fmt(fm.rustfmt_nightly)
-			ft("css,html,javascript,json,json5,vue,yaml"):fmt(fm.prettier)
+			ft("css,scss,html,javascript,json,json5,vue,yaml"):fmt(global_prettier)
 			ft("toml"):fmt(fm.taplo)
-			ft("python"):fmt({
-				cmd = "isort",
-				args = { "--profile", "black", "-" },
-				stdin = true,
-			})
+			ft("python"):fmt(fm.isort):append(fm.black)
 
 			require("guard").setup({
 				fmt_on_save = true,
@@ -264,64 +269,6 @@ require("lazy").setup({
 			})
 		end,
 	},
-	-- {
-	-- 	"mhartington/formatter.nvim",
-	-- 	config = function()
-	-- 		local function prettier(...)
-	-- 			local args = { ... }
-	-- 			return function()
-	-- 				table.insert(args, "--stdin-filepath")
-	-- 				table.insert(args, vim.fn.fnameescape(vim.api.nvim_buf_get_name(0)))
-	-- 				return {
-	-- 					exe = "/usr/bin/node /usr/local/bin/prettier", -- use global node version
-	-- 					args = args,
-	-- 					stdin = true,
-	-- 				}
-	-- 			end
-	-- 		end
-	-- 		local function exe_args_stdin(exe, ...)
-	-- 			local args = { ... }
-	-- 			return function()
-	-- 				-- print("args=", vim.inspect(args))
-	-- 				return {
-	-- 					exe = exe,
-	-- 					args = args,
-	-- 					stdin = true,
-	-- 				}
-	-- 			end
-	-- 		end
-	-- 		require("formatter").setup({
-	-- 			filetype = {
-	-- 				-- html = { prettier("--tab-width", 4) }, -- doesn't work with jinja
-	-- 				json = { prettier() },
-	-- 				json5 = { prettier() },
-	-- 				yaml = { prettier() },
-	-- 				css = { prettier() },
-	-- 				scss = { prettier() },
-	-- 				vue = { prettier() },
-	-- 				svelte = { prettier() },
-	-- 				typescript = { prettier() },
-	-- 				-- markdown = { prettier() },
-	-- 				javascript = { prettier() },
-	-- 				lua = { exe_args_stdin("stylua", "-") },
-	-- 				rust = { exe_args_stdin("rustfmt", "--emit=stdout", "--edition=2021") },
-	-- 				-- rust = { exe_args_stdin("leptosfmt", "--stdin") },
-	-- 				toml = { exe_args_stdin("taplo", "fmt", "-") },
-	-- 				python = { exe_args_stdin("isort", "--profile", "black", "-"), exe_args_stdin("black", "-") },
-	-- 			},
-	-- 		})
-	-- 		-- autocmd BufWritePost *.rs,*.py,*.html,*.lua FormatWrite
-	-- 		vim.api.nvim_exec(
-	-- 			[[
-	--                augroup FormatAutogroup
-	--                autocmd!
-	--                autocmd BufWritePost * silent! FormatWrite
-	--                augroup END
-	--                ]],
-	-- 			true
-	-- 		)
-	-- 	end,
-	-- },
 	{
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
@@ -719,6 +666,10 @@ require("lazy").setup({
 			"nvim-lua/plenary.nvim",
 		},
 	},
+	-- {
+	-- 	"alopatindev/cargo-limit",
+	-- 	build = "cargo install --locked cargo-limit nvim-send",
+	-- },
 })
 
 function OpenTodo(in_split, show_errors)
@@ -746,6 +697,7 @@ function OpenTodo(in_split, show_errors)
 end
 
 vim.keymap.set("n", "<leader>t", "<cmd>lua OpenTodo(true, true)<cr>", { silent = true })
+vim.keymap.set("n", "<leader>T", "<cmd>sp ~/Documents/todo.md<cr>", { silent = true })
 
 vim.api.nvim_create_autocmd("VimEnter", {
 	callback = function()
