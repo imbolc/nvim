@@ -223,11 +223,12 @@ require("lazy").setup({
 			vim.keymap.set("n", "<leader>d", function()
 				local oil = require("oil")
 
-				local cur_dir = vim.fn.fnamemodify(vim.fn.expand("%:p"), ":h")
-				vim.cmd("tabnew " .. cur_dir)
+				-- Opening in a new tab makes using it in splits inconvenient
+				-- local cur_dir = vim.fn.fnamemodify(vim.fn.expand("%:p"), ":h")
+				-- vim.cmd("tabnew " .. cur_dir)
+				-- oil.open(cur_dir)
 
-				oil.open(cur_dir)
-
+				oil.open()
 				-- Wait until oil has opened, for a maximum of 1 second.
 				vim.wait(1000, function()
 					return oil.get_cursor_entry() ~= nil
@@ -666,10 +667,10 @@ require("lazy").setup({
 			"nvim-lua/plenary.nvim",
 		},
 	},
-	-- {
-	-- 	"alopatindev/cargo-limit",
-	-- 	build = "cargo install --locked cargo-limit nvim-send",
-	-- },
+	{
+		"alopatindev/cargo-limit",
+		build = "cargo install --locked cargo-limit nvim-send",
+	},
 })
 
 function OpenTodo(in_split, show_errors)
@@ -706,3 +707,38 @@ vim.api.nvim_create_autocmd("VimEnter", {
 		end
 	end,
 })
+
+function FindLabRs()
+	local function find_file(dir)
+		local handle = vim.loop.fs_scandir(dir)
+		if handle then
+			while true do
+				local name, type = vim.loop.fs_scandir_next(handle)
+				if not name then
+					break
+				end
+
+				local path = dir .. "/" .. name
+				if type == "file" and name == "lab.rs" then
+					return path
+				elseif type == "directory" then
+					local result = find_file(path)
+					if result then
+						return result
+					end
+				end
+			end
+		end
+	end
+
+	local current_dir = vim.fn.getcwd()
+	local lab_rs_path = find_file(current_dir)
+
+	if lab_rs_path then
+		vim.cmd("tabnew " .. lab_rs_path)
+	else
+		vim.notify("lab.rs not found", vim.log.levels.ERROR)
+	end
+end
+
+vim.keymap.set("n", "<leader>l", "<cmd>lua FindLabRs()<cr>", { silent = true })
