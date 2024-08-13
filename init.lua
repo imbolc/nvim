@@ -1,8 +1,4 @@
--- sudo npm install -g prettier lua-fmt yaml-unist-parser
--- pip3 install black isort ueberzug
--- cargo install taplo-cli stylua comrak rust-script
--- sudo apt install shfmt
-
+-- Install dependencies: ./install.sh
 vim.g.mapleader = ","
 
 vim.opt.mouse = ""
@@ -185,10 +181,6 @@ require("lazy").setup({
 			vim.cmd([[colorscheme PaperColorSlim]])
 		end,
 	},
-	{ "EdenEast/nightfox.nvim" },
-	{ "projekt0n/github-nvim-theme" },
-	{ "NLKNguyen/papercolor-theme" },
-	{ "folke/tokyonight.nvim" },
 	{
 		-- Tables
 		"dhruvasagar/vim-table-mode",
