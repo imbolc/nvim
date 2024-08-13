@@ -624,21 +624,17 @@ require("lazy").setup({
 				-- List of available servers: https://github.com/williamboman/mason-lspconfig.nvim?tab=readme-ov-file#available-lsp-servers
 				ensure_installed = {
 					"bashls", -- bash
-					-- "biome", -- js eslint compatible
 					"cssls", -- css
 					"jsonls",
 					"lua_ls",
 					"marksman",
 					"pyright",
 					"quick_lint_js",
-					"rust_analyzer",
 					"svelte",
-					"taplo",
 					"typos_lsp", -- cargo typos-cli
 					"volar",
 					"vuels",
 					"yamlls",
-					-- "stylua", -- TODO: ?
 				},
 				automatic_installation = true,
 			})

@@ -17,5 +17,7 @@ cargo install -q stylua # formatter
 cargo install -q taplo-cli # formatter
 
 # Python
+# TODO: consider using Ruff instead after it's published to crates.io:
+# https://github.com/astral-sh/ruff/issues/43
 pipx install black # formatter
 pipx install isort # imports sorter
