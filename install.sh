@@ -6,6 +6,7 @@ sudo npm install -g prettier yaml-unist-parser
 
 # Bash
 sudo apt install -y shfmt # formatter
+sudo npm install bash-language-server
 
 # Markdown
 cargo install -q comrak # renderer

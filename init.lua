@@ -170,7 +170,15 @@ require("lazy").setup({
 	"mechatroner/rainbow_csv",
 	"ConradIrwin/vim-bracketed-paste", -- Auto paste mode
 	"junegunn/vim-slash", -- Automatically remove search selection
-	"ray-x/lsp_signature.nvim", --- Show function signature when you type
+	{
+		-- Show function signature when you type
+		"ray-x/lsp_signature.nvim",
+		event = "VeryLazy",
+		opts = {},
+		config = function(_, opts)
+			require("lsp_signature").setup(opts)
+		end,
+	},
 	"onsails/lspkind-nvim",
 	"Xuyuanp/sqlx-rs.nvim",
 	-- "evanleck/vim-svelte",
@@ -536,7 +544,9 @@ require("lazy").setup({
 			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 			local lspconfig = require("lspconfig")
 
-			lspconfig.bashls.setup({})
+			lspconfig.bashls.setup({
+				cmd = { "/usr/bin/node", "/usr/local/bin/bash-language-server", "start" },
+			})
 			lspconfig.typos_lsp.setup({})
 			-- lspconfig.biome.setup({
 			-- 	single_file_support = true,
@@ -587,7 +597,7 @@ require("lazy").setup({
 			lspconfig.marksman.setup({
 				on_attach = on_attach,
 			})
-			lspconfig.pyright.setup({
+			lspconfig.pylsp.setup({
 				on_attach = on_attach,
 			})
 			lspconfig.quick_lint_js.setup({
@@ -623,12 +633,11 @@ require("lazy").setup({
 			require("mason-lspconfig").setup({
 				-- List of available servers: https://github.com/williamboman/mason-lspconfig.nvim?tab=readme-ov-file#available-lsp-servers
 				ensure_installed = {
-					"bashls", -- bash
 					"cssls", -- css
 					"jsonls",
 					"lua_ls",
 					"marksman",
-					"pyright",
+					"pylsp",
 					"quick_lint_js",
 					"svelte",
 					"typos_lsp", -- cargo typos-cli
@@ -658,6 +667,16 @@ require("lazy").setup({
 	{
 		"alopatindev/cargo-limit",
 		build = "cargo install --locked cargo-limit nvim-send",
+	},
+	{
+		"m4xshen/hardtime.nvim",
+		dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
+		opts = {
+			-- restricted_keys = {
+			-- 	["j"] = {},
+			-- 	["k"] = {},
+			-- },
+		},
 	},
 })
 
