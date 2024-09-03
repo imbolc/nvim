@@ -39,6 +39,9 @@ vim.opt.shiftwidth = 4
 vim.opt.softtabstop = 4
 vim.opt.tabstop = 4
 
+-- Enable file path completion
+-- vim.opt.path:append("**")
+
 -- --  Display tab characters
 -- vim.wo.list = true
 -- vim.opt.listchars:append("tab:>·")
@@ -123,6 +126,13 @@ vim.api.nvim_exec(
 -- I use it with a minimal setup, but prefer a Ranger-like layout with files preview
 vim.keymap.set("n", "<leader>d", ":tabe %:p:h<cr>:echo 'D - delete | d - mkdir | % - new file'<cr>", { silent = true })
 
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "sql",
+	callback = function()
+		vim.bo.commentstring = "-- %s"
+		vim.api.nvim_buf_set_keymap(0, "n", "<leader>r", ":w|!psql -f %<CR>", { noremap = true, silent = true })
+	end,
+})
 vim.cmd([[au FileType lua map <buffer> <leader>r :w\| :source  %<cr>]])
 vim.cmd([[au FileType rust map <buffer> <leader>r :w\|! DATABASE_URL=postgres:/// rust-script %<cr>]])
 vim.cmd([[au FileType sh map <buffer> <leader>r :w\|!bash %<cr>]])
@@ -135,7 +145,6 @@ vim.cmd([[
     " au FileType markdown setlocal textwidth=80
     au FileType markdown setlocal spell
     au FileType markdown setlocal conceallevel=0
-    au FileType markdown vnoremap g gq
     au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table -e footnotes % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
     au FileType markdown TSBufDisable highlight
 ]])
@@ -308,7 +317,24 @@ require("lazy").setup({
 				indent = {
 					enable = true,
 				},
+				injections = {
+					enable = true,
+				},
 			})
+
+			local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+
+			-- Highlight heredoc SQL strings in Bash scripts
+			parser_config.bash = {
+				injections = {
+					sql = {
+						-- Inject SQL into heredocs with SQL tag
+						[[(heredoc_start) @injection.language
+                        (#match? @injection.language "(SQL)")
+                        (heredoc_body) @injection.content]],
+					},
+				},
+			}
 		end,
 	},
 	{
@@ -672,10 +698,10 @@ require("lazy").setup({
 		"m4xshen/hardtime.nvim",
 		dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
 		opts = {
-			-- restricted_keys = {
-			-- 	["j"] = {},
-			-- 	["k"] = {},
-			-- },
+			restricted_keys = {
+				["j"] = {},
+				["k"] = {},
+			},
 		},
 	},
 })
@@ -700,12 +726,12 @@ function OpenTodo(in_split, show_errors)
 	elseif #existing_files > 1 then
 		error("Multiple TODO files found:\n" .. table.concat(existing_files, "\n"))
 	else
-		vim.cmd((in_split and "split" or "edit") .. " " .. existing_files[1])
+		vim.cmd((in_split and "vsplit" or "edit") .. " " .. existing_files[1])
 	end
 end
 
 vim.keymap.set("n", "<leader>t", "<cmd>lua OpenTodo(true, true)<cr>", { silent = true })
-vim.keymap.set("n", "<leader>T", "<cmd>sp ~/Documents/todo.md<cr>", { silent = true })
+vim.keymap.set("n", "<leader>T", "<cmd>vs ~/Documents/todo.md<cr>", { silent = true })
 
 vim.api.nvim_create_autocmd("VimEnter", {
 	callback = function()
