@@ -572,6 +572,8 @@ require("lazy").setup({
 
 			lspconfig.bashls.setup({
 				cmd = { "/usr/bin/node", "/usr/local/bin/bash-language-server", "start" },
+				capabilities = capabilities,
+				on_attach = on_attach,
 			})
 			lspconfig.typos_lsp.setup({})
 			-- lspconfig.biome.setup({

@@ -1,11 +1,12 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 set -eux
 
 # JS / CSS
 sudo npm install -g prettier yaml-unist-parser
 
 # Bash
-sudo apt install -y shfmt # formatter
+sudo apt install -y shellcheck # linter, used automatically by bash-language-server
+sudo apt install -y shfmt      # formatter
 sudo npm install bash-language-server
 
 # Markdown
