@@ -135,7 +135,7 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 vim.cmd([[au FileType lua map <buffer> <leader>r :w\| :source  %<cr>]])
 vim.cmd([[au FileType rust map <buffer> <leader>r :w\|! DATABASE_URL=postgres:/// rust-script %<cr>]])
-vim.cmd([[au FileType sh map <buffer> <leader>r :w\|!bash %<cr>]])
+vim.cmd([[au FileType sh map <buffer> <leader>r :w\|!sh %<cr>]])
 vim.cmd([[au FileType python map <buffer> <leader>r :w\|!python3 %<cr>]])
 vim.cmd([[au FileType sql map <buffer> <leader>r :w\|!psql -f %<cr>]])
 vim.cmd([[au FileType html map <buffer> <leader>r :w\|!open %<cr>]])
@@ -636,6 +636,7 @@ require("lazy").setup({
 			-- })
 			lspconfig.vuels.setup({
 				on_attach = on_attach,
+				cmd = { "/usr/bin/node", "/usr/local/bin/vls" },
 			})
 			lspconfig.cssls.setup({
 				on_attach = on_attach,
@@ -670,7 +671,6 @@ require("lazy").setup({
 					"svelte",
 					"typos_lsp", -- cargo typos-cli
 					"volar",
-					"vuels",
 					"yamlls",
 				},
 				automatic_installation = true,

@@ -4,6 +4,9 @@ set -eux
 # JS / CSS
 sudo npm install -g prettier yaml-unist-parser
 
+# Vue
+sudo npm install -g vls
+
 # Bash
 sudo apt install -y shellcheck # linter, used automatically by bash-language-server
 sudo apt install -y shfmt      # formatter
