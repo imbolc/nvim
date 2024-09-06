@@ -641,6 +641,13 @@ require("lazy").setup({
 			lspconfig.cssls.setup({
 				on_attach = on_attach,
 			})
+			lspconfig.harper_ls.setup({
+				settings = {
+					["harper-ls"] = {
+						userDictPath = vim.fn.stdpath("config") .. "/spell/en.utf-8.add",
+					},
+				},
+			})
 		end,
 	},
 	{

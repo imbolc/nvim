@@ -6,21 +6,9 @@ git clone git@github.com:imbolc/nvim.git ~/.config/nvim
 git clone git@github.com:imbolc/notes.git ~/Documents/notes
 ```
 
-## Install via HTTPS (read-only)
-```sh
-git clone https://github.com/imbolc/nvim ~/.config/nvim
-git clone https://github.com/imbolc/notes.git ~/Documents/notes
-```
-
-## Packer
-
-- install plugins and exit: `nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'`
 
 ## TODO
 
-- https://github.com/nvim-treesitter/nvim-treesitter#quickstart
-    daf - delete outside function
-    [m - move to the next method
 
 Bugs:
 

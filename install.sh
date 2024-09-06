@@ -7,10 +7,13 @@ sudo npm install -g prettier yaml-unist-parser
 # Vue
 sudo npm install -g vls
 
-# Bash
+# Sh
 sudo apt install -y shellcheck # linter, used automatically by bash-language-server
 sudo apt install -y shfmt      # formatter
 sudo npm install bash-language-server
+
+# Grammar
+cargo install harper-ls --locked
 
 # Markdown
 cargo install -q comrak # renderer
