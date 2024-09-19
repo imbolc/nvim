@@ -271,7 +271,7 @@ require("lazy").setup({
 			ft("rust"):fmt(fm.rustfmt_nightly)
 			ft("css,scss,html,javascript,json,json5,vue,yaml"):fmt(global_prettier)
 			ft("toml"):fmt(fm.taplo)
-			ft("python"):fmt(fm.isort):append(fm.black)
+			ft("python"):fmt(fm.ruff)
 
 			require("guard").setup({
 				fmt_on_save = true,
@@ -626,7 +626,7 @@ require("lazy").setup({
 			lspconfig.marksman.setup({
 				on_attach = on_attach,
 			})
-			lspconfig.pylsp.setup({
+			lspconfig.ruff.setup({
 				on_attach = on_attach,
 			})
 			lspconfig.vuels.setup({
@@ -661,15 +661,8 @@ require("lazy").setup({
 			require("mason-lspconfig").setup({
 				-- List of available servers: https://github.com/williamboman/mason-lspconfig.nvim?tab=readme-ov-file#available-lsp-servers
 				ensure_installed = {
-					"jsonls",
 					"lua_ls",
 					"marksman",
-					"pylsp",
-					"quick_lint_js",
-					"svelte",
-					"typos_lsp", -- cargo typos-cli
-					"volar",
-					"yamlls",
 				},
 				automatic_installation = true,
 			})

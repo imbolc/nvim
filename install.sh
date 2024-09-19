@@ -14,6 +14,7 @@ sudo apt install -y shfmt      # formatter
 sudo npm install -g bash-language-server
 
 # Grammar
+cargo install typos-cli
 cargo install harper-ls --locked
 
 # Markdown
@@ -26,7 +27,4 @@ cargo install -q stylua # formatter
 cargo install -q taplo-cli # formatter
 
 # Python
-# TODO: consider using Ruff instead after it's published to crates.io:
-# https://github.com/astral-sh/ruff/issues/43
-pipx install black # formatter
-pipx install isort # imports sorter
+pipx install fuff # linter, formatter and lsp
