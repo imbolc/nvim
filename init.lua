@@ -663,6 +663,7 @@ require("lazy").setup({
 				ensure_installed = {
 					"lua_ls",
 					"marksman",
+					"typos_lsp",
 				},
 				automatic_installation = true,
 			})
