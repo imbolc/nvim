@@ -576,11 +576,12 @@ require("lazy").setup({
 				on_attach = on_attach,
 			})
 			lspconfig.typos_lsp.setup({})
-			-- lspconfig.biome.setup({
-			-- 	single_file_support = true,
-			-- 	capabilities = capabilities,
-			-- 	on_attach = on_attach,
-			-- })
+			lspconfig.biome.setup({
+				cmd = { "/usr/bin/node", "/usr/local/bin/biome", "lsp-proxy" },
+				single_file_support = true,
+				capabilities = capabilities,
+				on_attach = on_attach,
+			})
 			lspconfig.rust_analyzer.setup({
 				capabilities = capabilities,
 				on_attach = on_attach,
@@ -628,18 +629,9 @@ require("lazy").setup({
 			lspconfig.pylsp.setup({
 				on_attach = on_attach,
 			})
-			lspconfig.quick_lint_js.setup({
-				on_attach = on_attach,
-			})
-			-- lspconfig.eslint.setup({
-			-- 	on_attach = on_attach,
-			-- })
 			lspconfig.vuels.setup({
 				on_attach = on_attach,
 				cmd = { "/usr/bin/node", "/usr/local/bin/vls" },
-			})
-			lspconfig.cssls.setup({
-				on_attach = on_attach,
 			})
 			lspconfig.harper_ls.setup({
 				settings = {
@@ -669,7 +661,6 @@ require("lazy").setup({
 			require("mason-lspconfig").setup({
 				-- List of available servers: https://github.com/williamboman/mason-lspconfig.nvim?tab=readme-ov-file#available-lsp-servers
 				ensure_installed = {
-					"cssls", -- css
 					"jsonls",
 					"lua_ls",
 					"marksman",
