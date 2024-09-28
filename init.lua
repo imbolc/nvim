@@ -4,6 +4,7 @@ vim.g.mapleader = ","
 vim.opt.mouse = ""
 
 vim.opt.autowrite = true -- automatically :write before running a commands
+vim.opt.spell = true
 vim.opt.spelllang = "en,ru"
 
 -- Backup
@@ -382,49 +383,35 @@ require("lazy").setup({
 		--- Autocompletion
 		"hrsh7th/nvim-cmp",
 		dependencies = {
-			"hrsh7th/cmp-nvim-lsp",
-			"hrsh7th/cmp-nvim-lua",
-			"hrsh7th/cmp-buffer",
-			"hrsh7th/cmp-path",
-			"hrsh7th/cmp-calc",
-			"kdheepak/cmp-latex-symbols",
-			"ray-x/cmp-treesitter",
-			"saadparwaiz1/cmp_luasnip",
-			"hrsh7th/cmp-cmdline",
-			"hrsh7th/cmp-nvim-lsp-document-symbol",
+			"hrsh7th/cmp-buffer", -- Completion based on the content of the current buffer
+			"hrsh7th/cmp-cmdline", -- Completion in Vim's command line
+			"hrsh7th/cmp-nvim-lsp", -- LSP-based completion
+			"hrsh7th/cmp-path", -- File system paths
+			"ray-x/cmp-treesitter", -- Treesitter-based completion
+			"hrsh7th/cmp-nvim-lsp-signature-help", -- Shows function signatures as you type
+			-- "zjp-CN/nvim-cmp-lsp-rs", -- TODO: better sorting for Rust suggestions
 		},
 		config = function()
+			-- Checks if there are non-whitespace characters before the cursor in the current line
 			local has_words_before = function()
+				unpack = unpack or table.unpack
 				local line, col = unpack(vim.api.nvim_win_get_cursor(0))
 				return col ~= 0
 					and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
 			end
 
-			local ls = require("luasnip")
-			local s = ls.snippet
-			local t = ls.text_node
-			local i = ls.insert_node
-
-			s("iferr", {
-				t("if err != nil {"),
-				i(1),
-				t("}"),
-			})
-
 			local cmp = require("cmp")
-
 			cmp.setup({
-				snippet = {
-					expand = function(args)
-						require("luasnip").lsp_expand(args.body)
-					end,
+				sources = {
+					{ name = "nvim_lsp" },
+					{ name = "treesitter" },
+					{ name = "buffer" },
+					{ name = "path" },
 				},
 				mapping = {
 					["<Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
 							cmp.select_next_item()
-						elseif ls.expand_or_locally_jumpable() then
-							ls.expand_or_jump()
 						elseif has_words_before() then
 							cmp.complete()
 						else
@@ -437,8 +424,6 @@ require("lazy").setup({
 					["<S-Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
 							cmp.select_prev_item()
-						elseif ls.jumpable(-1) then
-							ls.jump(-1)
 						else
 							fallback()
 						end
@@ -446,77 +431,32 @@ require("lazy").setup({
 						"i",
 						"s",
 					}),
-					["<C-Space>"] = cmp.mapping.complete(),
-					["<ESC>"] = cmp.mapping(function(fallback)
-						cmp.close()
-						fallback()
-					end),
-					-- ["<CR>"] = cmp.mapping.confirm({
-					-- 	behavior = cmp.ConfirmBehavior.Insert,
-					-- 	select = true,
-					-- }),
+					["<CR>"] = cmp.mapping.confirm({ select = true }),
 				},
+			})
+
+			cmp.setup.cmdline({ "/", "?" }, {
+				mapping = cmp.mapping.preset.cmdline(),
 				sources = {
-					{ name = "nvim_lsp" },
-					{ name = "luasnip" },
-					{ name = "buffer", keyword_length = 4 },
-					{ name = "path" },
-					{ name = "nvim_lua" },
-					{ name = "calc" },
-				},
-				completion = {
-					completeopt = "menu,menuone,noselect",
-				},
-				formatting = {
-					format = require("lspkind").cmp_format({
-						with_text = true,
-						maxwidth = 50,
-						menu = {
-							buffer = "Buffer",
-							nvim_lsp = "LSP",
-							luasnip = "LuaSnip",
-							nvim_lua = "Lua",
-							latex_symbols = "Latex",
-						},
-					}),
-				},
-			})
-
-			cmp.setup.cmdline("/", {
-				sources = cmp.config.sources({
-					{ name = "nvim_lsp_document_symbol" },
-				}, {
 					{ name = "buffer" },
-				}),
-				completion = {
-					completeopt = "menu,menuone,noselect",
-				},
-			})
-
-			cmp.setup.cmdline("?", {
-				sources = cmp.config.sources({
-					{ name = "nvim_lsp_document_symbol" },
-				}, {
-					{ name = "buffer" },
-				}),
-				completion = {
-					completeopt = "menu,menuone,noselect",
 				},
 			})
 
 			cmp.setup.cmdline(":", {
+				mapping = cmp.mapping.preset.cmdline(),
 				sources = cmp.config.sources({
 					{ name = "path" },
 				}, {
-					{ name = "cmdline" },
+					{
+						name = "cmdline",
+						option = {
+							ignore_cmds = { "Man", "!" },
+						},
+					},
 				}),
-				completion = {
-					completeopt = "menu,menuone,noselect",
-				},
 			})
 		end,
 	},
-	"L3MON4D3/LuaSnip", -- TODO: remove or configure
 	{
 		"preservim/vim-markdown",
 		dependencies = { "godlygeek/tabular" },
