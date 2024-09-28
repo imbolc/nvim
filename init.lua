@@ -130,14 +130,13 @@ vim.api.nvim_create_autocmd("FileType", {
 	pattern = "sql",
 	callback = function()
 		vim.bo.commentstring = "-- %s"
-		vim.api.nvim_buf_set_keymap(0, "n", "<leader>r", ":w|!psql -f %<CR>", { noremap = true, silent = true })
+		vim.api.nvim_buf_set_keymap(0, "n", "<leader>r", ":w|!psql -a -f %<CR>", { noremap = true, silent = true })
 	end,
 })
 vim.cmd([[au FileType lua map <buffer> <leader>r :w\| :source  %<cr>]])
 vim.cmd([[au FileType rust map <buffer> <leader>r :w\|! DATABASE_URL=postgres:/// rust-script %<cr>]])
 vim.cmd([[au FileType sh map <buffer> <leader>r :w\|!sh %<cr>]])
 vim.cmd([[au FileType python map <buffer> <leader>r :w\|!python3 %<cr>]])
-vim.cmd([[au FileType sql map <buffer> <leader>r :w\|!psql -f %<cr>]])
 vim.cmd([[au FileType html map <buffer> <leader>r :w\|!open %<cr>]])
 vim.cmd([[au FileType javascript map <buffer> <leader>r :w\|!node %<cr>]])
 vim.cmd([[
@@ -272,6 +271,10 @@ require("lazy").setup({
 			ft("css,scss,html,javascript,json,json5,vue,yaml"):fmt(global_prettier)
 			ft("toml"):fmt(fm.taplo)
 			ft("python"):fmt(fm.ruff)
+			-- ft("sql"):fmt({
+			-- 	cmd = "sleek",
+			-- 	stdin = true,
+			-- })
 
 			require("guard").setup({
 				fmt_on_save = true,
@@ -302,7 +305,7 @@ require("lazy").setup({
 					"typescript",
 					"vue",
 					"yaml",
-					"query", -- treesitter
+					"query", -- Treesitter
 					"scss",
 					"sql",
 				},
@@ -324,11 +327,11 @@ require("lazy").setup({
 
 			local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
 
-			-- Highlight heredoc SQL strings in Bash scripts
+			-- Highlight Heredoc SQL strings in Bash scripts
 			parser_config.bash = {
 				injections = {
 					sql = {
-						-- Inject SQL into heredocs with SQL tag
+						-- Inject SQL into Heredoc with SQL tag
 						[[(heredoc_start) @injection.language
                         (#match? @injection.language "(SQL)")
                         (heredoc_body) @injection.content]],
@@ -684,10 +687,10 @@ require("lazy").setup({
 			"nvim-lua/plenary.nvim",
 		},
 	},
-	{
-		"alopatindev/cargo-limit",
-		build = "cargo install --locked cargo-limit nvim-send",
-	},
+	-- {
+	-- 	"alopatindev/cargo-limit",
+	-- 	build = "cargo install --locked cargo-limit nvim-send",
+	-- },
 	{
 		"m4xshen/hardtime.nvim",
 		dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
