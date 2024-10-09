@@ -4,7 +4,7 @@ vim.g.mapleader = ","
 vim.opt.mouse = ""
 
 vim.opt.autowrite = true -- automatically :write before running a commands
-vim.opt.spell = true
+-- vim.opt.spell = true
 vim.opt.spelllang = "en,ru"
 
 -- Backup
@@ -431,7 +431,7 @@ require("lazy").setup({
 						"i",
 						"s",
 					}),
-					["<CR>"] = cmp.mapping.confirm({ select = true }),
+					-- ["<CR>"] = cmp.mapping.confirm({ select = true }),
 				},
 			})
 
@@ -576,13 +576,13 @@ require("lazy").setup({
 				on_attach = on_attach,
 				cmd = { "/usr/bin/node", "/usr/local/bin/vls" },
 			})
-			lspconfig.harper_ls.setup({
-				settings = {
-					["harper-ls"] = {
-						userDictPath = vim.fn.stdpath("config") .. "/spell/en.utf-8.add",
-					},
-				},
-			})
+			-- lspconfig.harper_ls.setup({
+			-- 	settings = {
+			-- 		["harper-ls"] = {
+			-- 			userDictPath = vim.fn.stdpath("config") .. "/spell/en.utf-8.add",
+			-- 		},
+			-- 	},
+			-- })
 		end,
 	},
 	{
@@ -712,3 +712,34 @@ function FindLabRs()
 end
 
 vim.keymap.set("n", "<leader>l", "<cmd>lua FindLabRs()<cr>", { silent = true })
+
+-- Auto change theme
+function AutoTheme()
+	local file = vim.fn.expand("~/.config/nvim/theme.lua")
+	vim.system({ "touch", file })
+
+	local event = vim.loop.new_fs_event()
+	event:start(
+		file,
+		{},
+		vim.schedule_wrap(function(err, _, events)
+			if err then
+				vim.notify("Error watching theme file: " .. err, vim.log.levels.ERROR)
+				event:stop()
+				return
+			end
+			if events.change then
+				dofile(file)
+			end
+		end)
+	)
+
+	vim.api.nvim_create_autocmd("VimLeavePre", {
+		callback = function()
+			if event then
+				event:stop()
+			end
+		end,
+	})
+end
+AutoTheme()
