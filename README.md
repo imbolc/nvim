@@ -19,7 +19,6 @@ Stuff to consider:
 - <https://github.com/FeiyouG/command_center.nvim>
 - <https://github.com/renerocksai/telekasten.nvim>
 - rust tools
-- <https://github.com/nvim-pack/nvim-spectre>
 - <https://github.com/chaoren/vim-wordmotion>
 - <https://github.com/jose-elias-alvarez/null-ls.nvim>
 - <https://github.com/folke/trouble.nvim>

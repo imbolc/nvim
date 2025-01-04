@@ -27,7 +27,7 @@ cargo install -q stylua # formatter
 cargo install -q taplo-cli # formatter
 
 # Python
-pipx install fuff # linter, formatter and lsp
+pipx install ruff # linter, formatter and lsp
 
 # Sql
 # cargo install sleek # formatter

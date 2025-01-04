@@ -143,6 +143,7 @@ vim.cmd([[au FileType javascript map <buffer> <leader>r :w\|!node %<cr>]])
 vim.cmd([[
     au FileType markdown setlocal wrap
     " au FileType markdown setlocal textwidth=80
+    " au FileType markdown setlocal columns=80
     au FileType markdown setlocal spell
     au FileType markdown setlocal conceallevel=0
     au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table -e footnotes % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
@@ -276,11 +277,6 @@ require("lazy").setup({
 			-- 	cmd = "sleek",
 			-- 	stdin = true,
 			-- })
-
-			require("guard").setup({
-				fmt_on_save = true,
-				lsp_as_default_formatter = true,
-			})
 		end,
 	},
 	{
@@ -353,6 +349,12 @@ require("lazy").setup({
 			telescope.setup({
 				defaults = {
 					file_ignore_patterns = { "%.git", "node_modules" },
+					layout_strategy = "horizontal",
+					layout_config = {
+						width = vim.o.columns,
+						height = vim.o.lines,
+						preview_width = 0.5,
+					},
 					mappings = {
 						i = {
 							["<cr>"] = actions.select_tab,
@@ -377,6 +379,7 @@ require("lazy").setup({
 				"<cmd>lua require('telescope.builtin').find_files({search_dirs={'~/Documents/notes'}})<cr>",
 				{ silent = true }
 			)
+			vim.keymap.set("n", "<leader>g", "<cmd>lua require('telescope.builtin').live_grep()<cr>", { silent = true })
 		end,
 	},
 	{
@@ -576,13 +579,13 @@ require("lazy").setup({
 				on_attach = on_attach,
 				cmd = { "/usr/bin/node", "/usr/local/bin/vls" },
 			})
-			-- lspconfig.harper_ls.setup({
-			-- 	settings = {
-			-- 		["harper-ls"] = {
-			-- 			userDictPath = vim.fn.stdpath("config") .. "/spell/en.utf-8.add",
-			-- 		},
-			-- 	},
-			-- })
+			lspconfig.harper_ls.setup({
+				settings = {
+					["harper-ls"] = {
+						userDictPath = vim.fn.stdpath("config") .. "/spell/en.utf-8.add",
+					},
+				},
+			})
 		end,
 	},
 	{
@@ -632,14 +635,11 @@ require("lazy").setup({
 	-- 	build = "cargo install --locked cargo-limit nvim-send",
 	-- },
 	{
-		"m4xshen/hardtime.nvim",
-		dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
-		opts = {
-			restricted_keys = {
-				["j"] = {},
-				["k"] = {},
-			},
-		},
+		"nvim-focus/focus.nvim",
+		version = "*",
+		config = function()
+			require("focus").setup()
+		end,
 	},
 })
 
