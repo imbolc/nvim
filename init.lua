@@ -227,26 +227,7 @@ require("lazy").setup({
 					show_hidden = true,
 				},
 			})
-
-			-- A workaround to automatically open preview, until the feature is added
-			-- https://github.com/stevearc/oil.nvim/issues/339
-			vim.keymap.set("n", "<leader>d", function()
-				local oil = require("oil")
-
-				-- Opening in a new tab makes using it in splits inconvenient
-				-- local cur_dir = vim.fn.fnamemodify(vim.fn.expand("%:p"), ":h")
-				-- vim.cmd("tabnew " .. cur_dir)
-				-- oil.open(cur_dir)
-
-				oil.open()
-				-- Wait until oil has opened, for a maximum of 1 second.
-				vim.wait(1000, function()
-					return oil.get_cursor_entry() ~= nil
-				end)
-				if oil.get_cursor_entry() then
-					oil.open_preview()
-				end
-			end)
+			vim.keymap.set("n", "<leader>d", ":Oil --preview<cr>", { silent = true })
 		end,
 	},
 	{
@@ -321,20 +302,6 @@ require("lazy").setup({
 					enable = true,
 				},
 			})
-
-			local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
-
-			-- Highlight Heredoc SQL strings in Bash scripts
-			parser_config.bash = {
-				injections = {
-					sql = {
-						-- Inject SQL into Heredoc with SQL tag
-						[[(heredoc_start) @injection.language
-                        (#match? @injection.language "(SQL)")
-                        (heredoc_body) @injection.content]],
-					},
-				},
-			}
 		end,
 	},
 	{
@@ -579,13 +546,13 @@ require("lazy").setup({
 				on_attach = on_attach,
 				cmd = { "/usr/bin/node", "/usr/local/bin/vls" },
 			})
-			lspconfig.harper_ls.setup({
-				settings = {
-					["harper-ls"] = {
-						userDictPath = vim.fn.stdpath("config") .. "/spell/en.utf-8.add",
-					},
-				},
-			})
+			-- lspconfig.harper_ls.setup({
+			-- 	settings = {
+			-- 		["harper-ls"] = {
+			-- 			userDictPath = vim.fn.stdpath("config") .. "/spell/en.utf-8.add",
+			-- 		},
+			-- 	},
+			-- })
 		end,
 	},
 	{
@@ -634,13 +601,6 @@ require("lazy").setup({
 	-- 	"alopatindev/cargo-limit",
 	-- 	build = "cargo install --locked cargo-limit nvim-send",
 	-- },
-	{
-		"nvim-focus/focus.nvim",
-		version = "*",
-		config = function()
-			require("focus").setup()
-		end,
-	},
 })
 
 function OpenTodo(in_split, show_errors)
