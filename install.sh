@@ -13,9 +13,8 @@ sudo apt install -y shellcheck # linter, used automatically by bash-language-ser
 sudo apt install -y shfmt      # formatter
 sudo npm install -g bash-language-server
 
-# Grammar
+# Spelling
 cargo install typos-cli
-cargo install harper-ls --locked
 
 # Markdown
 cargo install -q comrak # renderer

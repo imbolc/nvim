@@ -4,7 +4,7 @@ vim.g.mapleader = ","
 vim.opt.mouse = ""
 
 vim.opt.autowrite = true -- automatically :write before running a commands
--- vim.opt.spell = true
+vim.opt.spell = true
 vim.opt.spelllang = "en,ru"
 
 -- Backup
@@ -546,13 +546,6 @@ require("lazy").setup({
 				on_attach = on_attach,
 				cmd = { "/usr/bin/node", "/usr/local/bin/vls" },
 			})
-			-- lspconfig.harper_ls.setup({
-			-- 	settings = {
-			-- 		["harper-ls"] = {
-			-- 			userDictPath = vim.fn.stdpath("config") .. "/spell/en.utf-8.add",
-			-- 		},
-			-- 	},
-			-- })
 		end,
 	},
 	{
@@ -576,7 +569,6 @@ require("lazy").setup({
 				ensure_installed = {
 					"lua_ls",
 					"marksman",
-					"typos_lsp",
 				},
 				automatic_installation = true,
 			})
