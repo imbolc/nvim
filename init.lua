@@ -625,7 +625,9 @@ vim.keymap.set("n", "<leader>T", "<cmd>vs ~/Documents/todo.md<cr>", { silent = t
 vim.api.nvim_create_autocmd("VimEnter", {
 	callback = function()
 		if vim.fn.argc() == 0 then
-			OpenTodo(false, false)
+			vim.defer_fn(function()
+				OpenTodo(false, false)
+			end, 0)
 		end
 	end,
 })
