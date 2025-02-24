@@ -40,24 +40,10 @@ vim.opt.shiftwidth = 4
 vim.opt.softtabstop = 4
 vim.opt.tabstop = 4
 
--- Enable file path completion
--- vim.opt.path:append("**")
-
--- --  Display tab characters
--- vim.wo.list = true
--- vim.opt.listchars:append("tab:>·")
-
 -- Decrease update time
 vim.opt.updatetime = 100
 
--- Treesitter based folding
-vim.opt.foldenable = true
-vim.opt.foldlevel = 99
-vim.opt.foldlevelstart = 99
-vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-
--- Don't lose selection when shifting
+-- Don't lose selection when shifting blocks
 vim.keymap.set("x", "<", "<gv", { silent = true })
 vim.keymap.set("x", ">", ">gv", { silent = true })
 
@@ -79,54 +65,26 @@ vim.keymap.set("n", "<C-Right>", ":vertical resize -3<CR>", { silent = true })
 vim.keymap.set("n", "Q", "<nop>", { silent = true })
 vim.keymap.set("n", "q:", "<nop>", { silent = true })
 
--- Colorscheme
-vim.opt.background = "light"
-
--- Set completeopt to have a better completion experience
--- vim.opt.completeopt = "menuone,noselect"
-
 -- Switching between tabs by <tab> / <shift-tab>
 vim.keymap.set("n", "<tab>", "gt", { silent = true })
 vim.keymap.set("n", "<s-tab>", "gT", { silent = true })
 
--- Show command line only with filename in it
+-- Show status line only if there are at least two windows
 vim.opt.laststatus = 1
-vim.opt.rulerformat = "%15(%=%l,%c %P%)"
-vim.api.nvim_exec(
-	[[
-    function! _get_commandline_filename()
-        let filename = @% =~ '^\/' ? @% : './' . @%
-        " window width - pressed keys place - ruller, so it fits into a line
-        let max = winwidth(0) - 11 - 16
-        if len(filename) > max
-            let filename = "<" . strcharpart(filename, len(filename) - max + 1)
-        endif
-        return filename
-    endfunction
-    augroup CmdLineFile
-        autocmd!
-        autocmd BufEnter * redraw! | echo _get_commandline_filename()
-    augroup END
-]],
-	true
-)
 
 -- Templates
 vim.api.nvim_exec(
 	[[
     augroup templates
         autocmd BufNewFile *.sh 0r ~/.config/nvim/templates/skeleton.sh
-        autocmd BufNewFile *.vue 0r ~/.config/nvim/templates/skeleton.vue
-        autocmd BufNewFile *.svelte 0r ~/.config/nvim/templates/skeleton.svelte
     augroup END
 ]],
 	true
 )
 
--- Netrw file manager
--- I use it with a minimal setup, but prefer a Ranger-like layout with files preview
-vim.keymap.set("n", "<leader>d", ":tabe %:p:h<cr>:echo 'D - delete | d - mkdir | % - new file'<cr>", { silent = true })
-
+--------------------------------
+-- File type related settings --
+--------------------------------
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "sql",
 	callback = function()
@@ -162,6 +120,9 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 	end,
 })
 
+-------------
+-- Plugins --
+-------------
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	vim.fn.system({
@@ -248,9 +209,15 @@ require("lazy").setup({
 				stdin = true,
 			}
 
+			local rustfmt_nightly = {
+				cmd = "rustup",
+				args = { "run", "nightly", "rustfmt", "--edition", "2024", "--emit", "stdout" },
+				stdin = true,
+			}
+
 			ft("sh"):fmt(fm.shfmt)
 			ft("lua"):fmt(fm.stylua)
-			ft("rust"):fmt(fm.rustfmt_nightly)
+			ft("rust"):fmt(rustfmt_nightly)
 			ft("css,scss,html,javascript,json,json5,vue,yaml"):fmt(global_prettier)
 			ft("toml"):fmt(fm.taplo)
 			ft("python"):fmt(fm.ruff)
