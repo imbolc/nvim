@@ -150,13 +150,18 @@ require("lazy").setup({
 			require("lsp_signature").setup(opts)
 		end,
 	},
-	"onsails/lspkind-nvim",
 	"Xuyuanp/sqlx-rs.nvim",
 	-- "evanleck/vim-svelte",
 	-- "posva/vim-vue",
 	{
 		"pappasam/papercolor-theme-slim",
 		config = function()
+			-- Fix Telescope selection color
+			-- https://github.com/pappasam/papercolor-theme-slim/issues/10#issuecomment-2706602161
+			vim.defer_fn(function()
+				vim.api.nvim_set_hl(0, "TelescopeSelection", { link = "CursorLine" })
+			end, 1000)
+
 			vim.cmd([[colorscheme PaperColorSlim]])
 		end,
 	},
@@ -281,6 +286,7 @@ require("lazy").setup({
 			local actions = require("telescope.actions")
 
 			telescope.setup({
+				pickers = { find_files = { hidden = true } },
 				defaults = {
 					file_ignore_patterns = { "%.git", "node_modules" },
 					layout_strategy = "horizontal",
