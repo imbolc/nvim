@@ -160,7 +160,7 @@ require("lazy").setup({
 			-- https://github.com/pappasam/papercolor-theme-slim/issues/10#issuecomment-2706602161
 			vim.defer_fn(function()
 				vim.api.nvim_set_hl(0, "TelescopeSelection", { link = "CursorLine" })
-			end, 1000)
+			end, 1500)
 
 			vim.cmd([[colorscheme PaperColorSlim]])
 		end,
