@@ -82,6 +82,11 @@ vim.api.nvim_exec(
 	true
 )
 
+vim.diagnostic.config({
+	virtual_text = true, -- single-line errors
+	-- virtual_lines = true, -- multi-line errors
+})
+
 --------------------------------
 -- File type related settings --
 --------------------------------
@@ -100,12 +105,13 @@ vim.cmd([[au FileType html map <buffer> <leader>r :w\|!open %<cr>]])
 vim.cmd([[au FileType javascript map <buffer> <leader>r :w\|!node %<cr>]])
 vim.cmd([[
     au FileType markdown setlocal wrap
-    " au FileType markdown setlocal textwidth=80
-    " au FileType markdown setlocal columns=80
     au FileType markdown setlocal spell
     au FileType markdown setlocal conceallevel=0
+    " au FileType markdown setlocal colorcolumn=80
     au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table -e footnotes % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
     au FileType markdown TSBufDisable highlight
+    " hard wrapping
+    " au FileType markdown setlocal textwidth=80 formatoptions+=t
 ]])
 vim.cmd([[
     au FileType yaml setlocal wrap
@@ -119,6 +125,121 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 		vim.bo[event.buf].commentstring = cs:gsub("(%S)%%s", "%1 %%s"):gsub("%%s(%S)", "%%s %1")
 	end,
 })
+
+function OpenTodo(in_split, show_errors)
+	local possible_files = { ".todo", ".todo.txt", ".todo.md", "var/todo.txt", "var/todo.md" }
+	local existing_files = {}
+	local function error(msg)
+		if show_errors then
+			vim.notify(msg, vim.log.levels.ERROR)
+		end
+	end
+
+	---@param fname string
+	---@return string
+	function resolve_symlink(fname)
+		local expanded = vim.uv.fs_realpath(fname)
+		if expanded ~= nil then
+			return expanded
+		end
+		return fname
+	end
+
+	for _, filename in ipairs(possible_files) do
+		-- filename = vim.uv.fs_realpath(filename) or filename
+		if vim.fn.filereadable(filename) == 1 then
+			vim.print(filename)
+			table.insert(existing_files, filename)
+		end
+	end
+
+	if #existing_files == 0 then
+		error("No TODO file found, tried:\n" .. table.concat(possible_files, "\n"))
+	elseif #existing_files > 1 then
+		error("Multiple TODO files found:\n" .. table.concat(existing_files, "\n"))
+	else
+		vim.cmd((in_split and "vsplit" or "edit") .. " " .. existing_files[1])
+	end
+end
+
+vim.keymap.set("n", "<leader>t", "<cmd>lua OpenTodo(true, true)<cr>", { silent = true })
+vim.keymap.set("n", "<leader>T", "<cmd>vs ~/Documents/todo.md<cr>", { silent = true })
+
+vim.api.nvim_create_autocmd("VimEnter", {
+	callback = function()
+		if vim.fn.argc() == 0 then
+			vim.defer_fn(function()
+				OpenTodo(false, false)
+			end, 0)
+		end
+	end,
+})
+
+function FindLabRs()
+	local function find_file(dir)
+		local handle = vim.loop.fs_scandir(dir)
+		if handle then
+			while true do
+				local name, type = vim.loop.fs_scandir_next(handle)
+				if not name then
+					break
+				end
+
+				local path = dir .. "/" .. name
+				if type == "file" and name == "lab.rs" then
+					return path
+				elseif type == "directory" then
+					local result = find_file(path)
+					if result then
+						return result
+					end
+				end
+			end
+		end
+	end
+
+	local current_dir = vim.fn.getcwd()
+	local lab_rs_path = find_file(current_dir)
+
+	if lab_rs_path then
+		vim.cmd("tabnew " .. lab_rs_path)
+	else
+		vim.notify("lab.rs not found", vim.log.levels.ERROR)
+	end
+end
+
+vim.keymap.set("n", "<leader>l", "<cmd>lua FindLabRs()<cr>", { silent = true })
+
+-- Auto change theme
+function AutoTheme()
+	local file = vim.fn.expand("~/.config/nvim/theme.lua")
+	vim.system({ "touch", file })
+
+	local event = vim.loop.new_fs_event()
+	event:start(
+		file,
+		{},
+		vim.schedule_wrap(function(err, _, events)
+			if err then
+				vim.notify("Error watching theme file: " .. err, vim.log.levels.ERROR)
+				event:stop()
+				return
+			end
+			if events.change then
+				dofile(file)
+			end
+		end)
+	)
+
+	vim.api.nvim_create_autocmd("VimLeavePre", {
+		callback = function()
+			if event then
+				event:stop()
+			end
+		end,
+	})
+end
+AutoTheme()
 
 -------------
 -- Plugins --
@@ -151,18 +272,19 @@ require("lazy").setup({
 		end,
 	},
 	"Xuyuanp/sqlx-rs.nvim",
-	-- "evanleck/vim-svelte",
-	-- "posva/vim-vue",
 	{
 		"pappasam/papercolor-theme-slim",
 		config = function()
 			-- Fix Telescope selection color
 			-- https://github.com/pappasam/papercolor-theme-slim/issues/10#issuecomment-2706602161
-			vim.defer_fn(function()
-				vim.api.nvim_set_hl(0, "TelescopeSelection", { link = "CursorLine" })
-			end, 1500)
+			-- vim.defer_fn(function()
+			-- 	vim.api.nvim_set_hl(0, "TelescopeSelection", { link = "CursorLine" })
+			-- end, 1500)
 
 			vim.cmd([[colorscheme PaperColorSlim]])
+			-- Fix Telescope selection color
+			-- https://github.com/pappasam/papercolor-theme-slim/issues/10#issuecomment-2706602161
+			vim.api.nvim_set_hl(0, "TelescopeSelection", { link = "CursorLine" })
 		end,
 	},
 	{
@@ -199,6 +321,8 @@ require("lazy").setup({
 	{
 		-- Formatters
 		"nvimdev/guard.nvim",
+		-- "guard.nvim",
+		-- dir = "/home/imbolc/0/open/guard.nvim",
 		dependencies = {
 			"nvimdev/guard-collection",
 		},
@@ -224,6 +348,19 @@ require("lazy").setup({
 			ft("lua"):fmt(fm.stylua)
 			ft("rust"):fmt(rustfmt_nightly)
 			ft("css,scss,html,javascript,json,json5,vue,yaml"):fmt(global_prettier)
+			ft("markdown"):fmt({
+				cmd = "/usr/bin/nodejs",
+				args = {
+					"/usr/local/bin/prettier",
+					"--print-width",
+					"80",
+					"--prose-wrap",
+					"always",
+					"--stdin-filepath",
+				},
+				fname = true,
+				stdin = true,
+			})
 			ft("toml"):fmt(fm.taplo)
 			ft("python"):fmt(fm.ruff)
 			-- ft("sql"):fmt({
@@ -567,106 +704,3 @@ require("lazy").setup({
 	-- 	build = "cargo install --locked cargo-limit nvim-send",
 	-- },
 })
-
-function OpenTodo(in_split, show_errors)
-	local possible_files = { ".todo", ".todo.txt", ".todo.md", "var/todo.txt", "var/todo.md" }
-	local existing_files = {}
-	local function error(msg)
-		if show_errors then
-			vim.notify(msg, vim.log.levels.ERROR)
-		end
-	end
-
-	for _, filename in ipairs(possible_files) do
-		if vim.fn.filereadable(filename) == 1 then
-			table.insert(existing_files, filename)
-		end
-	end
-
-	if #existing_files == 0 then
-		error("No TODO file found, tried:\n" .. table.concat(possible_files, "\n"))
-	elseif #existing_files > 1 then
-		error("Multiple TODO files found:\n" .. table.concat(existing_files, "\n"))
-	else
-		vim.cmd((in_split and "vsplit" or "edit") .. " " .. existing_files[1])
-	end
-end
-
-vim.keymap.set("n", "<leader>t", "<cmd>lua OpenTodo(true, true)<cr>", { silent = true })
-vim.keymap.set("n", "<leader>T", "<cmd>vs ~/Documents/todo.md<cr>", { silent = true })
-
-vim.api.nvim_create_autocmd("VimEnter", {
-	callback = function()
-		if vim.fn.argc() == 0 then
-			vim.defer_fn(function()
-				OpenTodo(false, false)
-			end, 0)
-		end
-	end,
-})
-
-function FindLabRs()
-	local function find_file(dir)
-		local handle = vim.loop.fs_scandir(dir)
-		if handle then
-			while true do
-				local name, type = vim.loop.fs_scandir_next(handle)
-				if not name then
-					break
-				end
-
-				local path = dir .. "/" .. name
-				if type == "file" and name == "lab.rs" then
-					return path
-				elseif type == "directory" then
-					local result = find_file(path)
-					if result then
-						return result
-					end
-				end
-			end
-		end
-	end
-
-	local current_dir = vim.fn.getcwd()
-	local lab_rs_path = find_file(current_dir)
-
-	if lab_rs_path then
-		vim.cmd("tabnew " .. lab_rs_path)
-	else
-		vim.notify("lab.rs not found", vim.log.levels.ERROR)
-	end
-end
-
-vim.keymap.set("n", "<leader>l", "<cmd>lua FindLabRs()<cr>", { silent = true })
-
--- Auto change theme
-function AutoTheme()
-	local file = vim.fn.expand("~/.config/nvim/theme.lua")
-	vim.system({ "touch", file })
-
-	local event = vim.loop.new_fs_event()
-	event:start(
-		file,
-		{},
-		vim.schedule_wrap(function(err, _, events)
-			if err then
-				vim.notify("Error watching theme file: " .. err, vim.log.levels.ERROR)
-				event:stop()
-				return
-			end
-			if events.change then
-				dofile(file)
-			end
-		end)
-	)
-
-	vim.api.nvim_create_autocmd("VimLeavePre", {
-		callback = function()
-			if event then
-				event:stop()
-			end
-		end,
-	})
-end
-AutoTheme()
