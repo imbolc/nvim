@@ -275,16 +275,7 @@ require("lazy").setup({
 	{
 		"pappasam/papercolor-theme-slim",
 		config = function()
-			-- Fix Telescope selection color
-			-- https://github.com/pappasam/papercolor-theme-slim/issues/10#issuecomment-2706602161
-			-- vim.defer_fn(function()
-			-- 	vim.api.nvim_set_hl(0, "TelescopeSelection", { link = "CursorLine" })
-			-- end, 1500)
-
 			vim.cmd([[colorscheme PaperColorSlim]])
-			-- Fix Telescope selection color
-			-- https://github.com/pappasam/papercolor-theme-slim/issues/10#issuecomment-2706602161
-			vim.api.nvim_set_hl(0, "TelescopeSelection", { link = "CursorLine" })
 		end,
 	},
 	{
@@ -413,50 +404,37 @@ require("lazy").setup({
 			})
 		end,
 	},
+	-- Ensure this file is placed correctly for lazy.nvim, e.g., lua/plugins/fzf-lua.lua
 	{
-		"nvim-telescope/telescope.nvim",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-		},
+		"ibhagwan/fzf-lua",
 		config = function()
-			local telescope = require("telescope")
-			local actions = require("telescope.actions")
+			local fzf_lua = require("fzf-lua")
+			local actions = require("fzf-lua.actions")
 
-			telescope.setup({
-				pickers = { find_files = { hidden = true } },
+			fzf_lua.setup({
+				fzf_bin = "sk", -- use skim instead of fzf
+				actions = {
+					files = {
+						true, -- inherit default bindings
+						["enter"] = actions.file_tabedit, -- open in a tab on Enter
+					},
+				},
 				defaults = {
-					file_ignore_patterns = { "%.git", "node_modules" },
-					layout_strategy = "horizontal",
-					layout_config = {
-						width = vim.o.columns,
-						height = vim.o.lines,
-						preview_width = 0.5,
-					},
-					mappings = {
-						i = {
-							["<cr>"] = actions.select_tab,
-							["<C-o>"] = function(prompt_bufnr)
-								actions.close(prompt_bufnr)
-								require("oil").open()
-							end,
-						},
-					},
+					file_icons = false,
 				},
 			})
 
-			vim.keymap.set(
-				"n",
-				"<leader>f",
-				"<cmd>lua require('telescope.builtin').find_files()<cr>",
-				{ silent = true }
-			)
-			vim.keymap.set(
-				"n",
-				"<leader>n",
-				"<cmd>lua require('telescope.builtin').find_files({search_dirs={'~/Documents/notes'}})<cr>",
-				{ silent = true }
-			)
-			vim.keymap.set("n", "<leader>g", "<cmd>lua require('telescope.builtin').live_grep()<cr>", { silent = true })
+			vim.keymap.set("n", "<leader>f", function()
+				fzf_lua.files()
+			end, { silent = true, desc = "Find Files" })
+
+			vim.keymap.set("n", "<leader>n", function()
+				fzf_lua.files({ cwd = vim.fn.expand("~/Documents/notes") })
+			end, { silent = true, desc = "Find Notes" })
+
+			vim.keymap.set("n", "<leader>g", function()
+				fzf_lua.live_grep()
+			end, { silent = true, desc = "Live Grep" })
 		end,
 	},
 	{

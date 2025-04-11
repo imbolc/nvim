@@ -14,19 +14,22 @@ sudo apt install -y shfmt      # formatter
 sudo npm install -g bash-language-server
 
 # Spelling
-cargo install typos-cli
+cargo install --locked --quiet typos-cli
 
 # Markdown
-cargo install -q comrak # renderer
+cargo install --locked --quiet comrak # renderer
 
 # Lua
-cargo install -q stylua # formatter
+cargo install --locked --quiet stylua # formatter
 
 # Toml
-cargo install -q taplo-cli # formatter
+cargo install --locked --quiet taplo-cli # formatter
 
 # Python
-pipx install ruff # linter, formatter and lsp
+pipx install ruff # linter, formatter and LSP
+
+# `fzf-lua`
+cargo install --locked --quiet bat fd-find ripgrep skim
 
 # Sql
 # cargo install sleek # formatter
