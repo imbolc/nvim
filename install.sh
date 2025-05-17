@@ -2,16 +2,16 @@
 set -eux
 
 # JS / CSS
-sudo npm install -g prettier yaml-unist-parser
-sudo npm install -g @biomejs/biome
+sudo npm install -g prettier@latest yaml-unist-parser@latest
+sudo npm install -g @biomejs/biome@latest
 
 # Vue
-sudo npm install -g vls
+sudo npm install -g vls@latest
 
 # Sh
 sudo apt install -y shellcheck # linter, used automatically by bash-language-server
 sudo apt install -y shfmt      # formatter
-sudo npm install -g bash-language-server
+sudo npm install -g bash-language-server@latest
 
 # Spelling
 cargo install --locked --quiet typos-cli
