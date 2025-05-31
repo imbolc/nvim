@@ -188,3 +188,5 @@ PR
 WebSocket
 mutex
 Tokio
+HTMx
+serde

@@ -33,4 +33,4 @@ pipx install ruff # linter, formatter and LSP
 cargo install --locked --quiet bat fd-find ripgrep skim
 
 # Sql
-# cargo install sleek # formatter
+cargo install --locked sleek # formatter

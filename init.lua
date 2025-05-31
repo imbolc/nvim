@@ -72,6 +72,9 @@ vim.keymap.set("n", "<s-tab>", "gT", { silent = true })
 -- Show status line only if there are at least two windows
 vim.opt.laststatus = 1
 
+-- Hide command line until typing a command
+vim.opt.cmdheight = 0
+
 -- Templates
 vim.api.nvim_exec(
 	[[
@@ -354,10 +357,10 @@ require("lazy").setup({
 			})
 			ft("toml"):fmt(fm.taplo)
 			ft("python"):fmt(fm.ruff)
-			-- ft("sql"):fmt({
-			-- 	cmd = "sleek",
-			-- 	stdin = true,
-			-- })
+			ft("sql"):fmt({
+				cmd = "sleek",
+				stdin = true,
+			})
 		end,
 	},
 	{
