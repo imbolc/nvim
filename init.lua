@@ -528,124 +528,96 @@ require("lazy").setup({
 		end,
 	},
 	{
-		"neovim/nvim-lspconfig",
+		-- Native LSP configuration (Neovim 0.11+)
+		-- This replaces nvim-lspconfig with Neovim's built-in LSP configuration system
+		-- LSP server configs are loaded from ~/.config/nvim/lsp/*.lua files
+		-- Uses vim.lsp.config() and vim.lsp.enable() for cleaner, more maintainable setup
+		name = "native-lsp",
+		dir = vim.fn.stdpath("config"),
 		config = function()
-			vim.lsp.handlers["textDocument/publishDiagnostics"] =
-				vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
-					virtual_text = true,
-					signs = true,
-					update_in_insert = true,
-				})
+			-- Configure diagnostics
+			vim.diagnostic.config({
+				virtual_text = true,
+				signs = true,
+				update_in_insert = true,
+			})
 
 			-- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "single" })
-			--
 			-- vim.lsp.handlers["textDocument/signatureHelp"] =
 			-- 	vim.lsp.with(vim.lsp.handlers.signature_help, { border = "single" })
 
-			local on_attach = function(client, bufnr)
-				local function map(...)
-					vim.api.nvim_buf_set_keymap(bufnr, ...)
-				end
+			-- Global LSP configuration that applies to all servers
+			vim.lsp.config("*", {
+				capabilities = require("cmp_nvim_lsp").default_capabilities(),
+			})
 
-				-- Mappings
-				local opts = { noremap = true, silent = true }
+			-- Set up LspAttach autocommand for keybindings
+			vim.api.nvim_create_autocmd("LspAttach", {
+				group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+				callback = function(ev)
+					local bufnr = ev.buf
+					local client = vim.lsp.get_client_by_id(ev.data.client_id)
 
-				-- See `:help vim.lsp.*` for documentation on any of the below functions
-				map("n", "gD", "<Cmd>lua vim.lsp.buf.declaration()<CR>", opts)
-				map("n", "gd", "<Cmd>lua vim.lsp.buf.definition()<CR>", opts)
-				map("n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", opts)
-				map("n", "<C-k>", "<cmd>lua vim.lsp.buf.signature_help()<CR>", opts)
-				map("n", "<space>D", "<cmd>lua vim.lsp.buf.type_definition()<CR>", opts)
-				map("n", "<space>r", "<cmd>lua vim.lsp.buf.rename()<CR>", opts)
-				map("n", "<space>a", "<cmd>lua vim.lsp.buf.code_action()<CR>", opts)
-				map("n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>", opts)
-				map("n", "<space>e", "<cmd>lua vim.diagnostic.open_float()<CR>", opts)
-				map("n", "<space>q", "<cmd>lua vim.diagnostic.set_loclist()<CR>", opts)
-				map("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
+					local function map(mode, lhs, rhs, opts)
+						opts = opts or {}
+						opts.buffer = bufnr
+						opts.noremap = true
+						opts.silent = true
+						vim.keymap.set(mode, lhs, rhs, opts)
+					end
 
-				require("lsp_signature").on_attach({
-					doc_lines = 0,
-					hint_enable = false,
-					zindex = 50, -- signature behind completion items
-					handler_opts = {
-						border = "none",
-					},
-				})
+					-- LSP keybindings
+					map("n", "gD", vim.lsp.buf.declaration)
+					map("n", "gd", vim.lsp.buf.definition)
+					map("n", "gi", vim.lsp.buf.implementation)
+					map("n", "<C-k>", vim.lsp.buf.signature_help)
+					map("n", "<space>D", vim.lsp.buf.type_definition)
+					map("n", "<space>r", vim.lsp.buf.rename)
+					map("n", "<space>a", vim.lsp.buf.code_action)
+					map("n", "gr", vim.lsp.buf.references)
+					map("n", "<space>e", vim.diagnostic.open_float)
+					map("n", "<space>q", vim.diagnostic.setloclist)
+					map("n", "<space>f", function()
+						vim.lsp.buf.format({ async = true })
+					end)
+
+					-- Set up lsp_signature
+					require("lsp_signature").on_attach({
+						doc_lines = 0,
+						hint_enable = false,
+						zindex = 50, -- signature behind completion items
+						handler_opts = {
+							border = "none",
+						},
+					}, bufnr)
+				end,
+			})
+
+			-- Enable LSP servers using native configuration
+			local servers = {
+				"lua_ls",
+				"rust_analyzer",
+				"bashls",
+				"biome",
+				"marksman",
+				"ruff",
+				"vuels",
+				"typos_lsp",
+			}
+
+			for _, server in ipairs(servers) do
+				vim.lsp.enable(server)
 			end
 
-			local capabilities = require("cmp_nvim_lsp").default_capabilities()
-			local lspconfig = require("lspconfig")
-
-			lspconfig.bashls.setup({
-				cmd = { "/usr/bin/node", "/usr/local/bin/bash-language-server", "start" },
-				capabilities = capabilities,
-				on_attach = on_attach,
-			})
-			lspconfig.typos_lsp.setup({})
-			-- require("lspconfig").harper_ls.setup({
+			-- Harper LS setup (commented out as in original)
+			-- vim.lsp.config("harper_ls", {
 			-- 	settings = {
 			-- 		["harper-ls"] = {
 			-- 			userDictPath = vim.fn.stdpath("config") .. "/spell/en.utf-8.add",
 			-- 		},
 			-- 	},
 			-- })
-			lspconfig.biome.setup({
-				cmd = { "/usr/bin/node", "/usr/local/bin/biome", "lsp-proxy" },
-				single_file_support = true,
-				capabilities = capabilities,
-				on_attach = on_attach,
-			})
-			lspconfig.rust_analyzer.setup({
-				capabilities = capabilities,
-				on_attach = on_attach,
-				flags = {
-					debounce_text_changes = 150,
-				},
-				settings = {
-					["rust-analyzer"] = {
-						cargo = {
-							allFeatures = true,
-						},
-						-- completion = {
-						-- 	postfix = {
-						-- 		enable = false,
-						-- 	},
-						-- },
-						-- rustfmt = {
-						--     overrideCommand = { "leptosfmt", "--stdin", "--rustfmt" },
-						-- },
-						-- procMacro = {
-						--     ignored = {
-						--         leptos_macro = {
-						--             -- optional: --
-						--             -- "component",
-						--             "server",
-						--         },
-						--     },
-						-- },
-					},
-				},
-			})
-			lspconfig.lua_ls.setup({
-				on_attach = on_attach,
-				settings = {
-					Lua = {
-						diagnostics = {
-							globals = { "vim", "require" },
-						},
-					},
-				},
-			})
-			lspconfig.marksman.setup({
-				on_attach = on_attach,
-			})
-			lspconfig.ruff.setup({
-				on_attach = on_attach,
-			})
-			lspconfig.vuels.setup({
-				on_attach = on_attach,
-				cmd = { "/usr/bin/node", "/usr/local/bin/vls" },
-			})
+			-- vim.lsp.enable("harper_ls")
 		end,
 	},
 	{
@@ -661,16 +633,23 @@ require("lazy").setup({
 		"williamboman/mason-lspconfig.nvim",
 		dependencies = {
 			"williamboman/mason.nvim",
-			"neovim/nvim-lspconfig",
 		},
 		config = function()
 			require("mason-lspconfig").setup({
 				-- List of available servers: https://github.com/williamboman/mason-lspconfig.nvim?tab=readme-ov-file#available-lsp-servers
 				ensure_installed = {
 					"lua_ls",
+					"rust_analyzer",
+					"bashls",
+					"biome",
 					"marksman",
+					"ruff",
+					"vuels",
+					"typos_lsp",
 				},
 				automatic_installation = true,
+				-- Disable automatic LSP setup since we're using native vim.lsp.enable()
+				automatic_enable = false,
 			})
 		end,
 	},
