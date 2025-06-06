@@ -444,81 +444,49 @@ require("lazy").setup({
 	},
 	{
 		--- Autocompletion
-		"hrsh7th/nvim-cmp",
-		dependencies = {
-			"hrsh7th/cmp-buffer", -- Completion based on the content of the current buffer
-			"hrsh7th/cmp-cmdline", -- Completion in Vim's command line
-			"hrsh7th/cmp-nvim-lsp", -- LSP-based completion
-			"hrsh7th/cmp-path", -- File system paths
-			"ray-x/cmp-treesitter", -- Treesitter-based completion
-			"hrsh7th/cmp-nvim-lsp-signature-help", -- Shows function signatures as you type
-			-- "zjp-CN/nvim-cmp-lsp-rs", -- TODO: better sorting for Rust suggestions
-		},
-		config = function()
-			-- Checks if there are non-whitespace characters before the cursor in the current line
-			local has_words_before = function()
-				unpack = unpack or table.unpack
-				local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-				return col ~= 0
-					and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
-			end
-
-			local cmp = require("cmp")
-			cmp.setup({
-				sources = {
-					{ name = "nvim_lsp" },
-					{ name = "treesitter" },
-					{ name = "buffer" },
-					{ name = "path" },
-				},
-				mapping = {
-					["<Tab>"] = cmp.mapping(function(fallback)
-						if cmp.visible() then
-							cmp.select_next_item()
-						elseif has_words_before() then
-							cmp.complete()
-						else
-							fallback()
-						end
-					end, {
-						"i",
-						"s",
-					}),
-					["<S-Tab>"] = cmp.mapping(function(fallback)
-						if cmp.visible() then
-							cmp.select_prev_item()
-						else
-							fallback()
-						end
-					end, {
-						"i",
-						"s",
-					}),
-					-- ["<CR>"] = cmp.mapping.confirm({ select = true }),
-				},
-			})
-
-			cmp.setup.cmdline({ "/", "?" }, {
-				mapping = cmp.mapping.preset.cmdline(),
-				sources = {
-					{ name = "buffer" },
-				},
-			})
-
-			cmp.setup.cmdline(":", {
-				mapping = cmp.mapping.preset.cmdline(),
-				sources = cmp.config.sources({
-					{ name = "path" },
-				}, {
-					{
-						name = "cmdline",
-						option = {
-							ignore_cmds = { "Man", "!" },
-						},
+		"saghen/blink.cmp",
+		dependencies = "rafamadriz/friendly-snippets",
+		version = "v0.*",
+		opts = {
+			keymap = {
+				preset = "default",
+				["<Tab>"] = { "select_next", "fallback" },
+				["<S-Tab>"] = { "select_prev", "fallback" },
+			},
+			appearance = {
+				use_nvim_cmp_as_default = true,
+				nerd_font_variant = "mono",
+			},
+			sources = {
+				default = { "lsp", "path", "snippets", "buffer" },
+				providers = {
+					buffer = {
+						name = "Buffer",
+						module = "blink.cmp.sources.buffer",
 					},
-				}),
-			})
-		end,
+				},
+			},
+			completion = {
+				accept = {
+					auto_brackets = {
+						enabled = true,
+					},
+				},
+				menu = {
+					draw = {
+						treesitter = { "lsp" },
+					},
+				},
+				documentation = {
+					auto_show = true,
+					auto_show_delay_ms = 200,
+				},
+			},
+			signature = {
+				enabled = true,
+			},
+		},
+		opts_extend = { "sources.default" },
 	},
 	{
 		"preservim/vim-markdown",
@@ -548,7 +516,7 @@ require("lazy").setup({
 
 			-- Global LSP configuration that applies to all servers
 			vim.lsp.config("*", {
-				capabilities = require("cmp_nvim_lsp").default_capabilities(),
+				capabilities = require("blink.cmp").get_lsp_capabilities(),
 			})
 
 			-- Set up LspAttach autocommand for keybindings
