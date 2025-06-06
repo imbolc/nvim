@@ -595,29 +595,20 @@ require("lazy").setup({
 
 			-- Enable LSP servers using native configuration
 			local servers = {
-				"lua_ls",
-				"rust_analyzer",
 				"bashls",
 				"biome",
+				"lua_ls",
 				"marksman",
 				"ruff",
-				"vuels",
+				"rust_analyzer",
 				"typos_lsp",
+				"vuels",
+				"harper_ls",
 			}
 
 			for _, server in ipairs(servers) do
 				vim.lsp.enable(server)
 			end
-
-			-- Harper LS setup (commented out as in original)
-			-- vim.lsp.config("harper_ls", {
-			-- 	settings = {
-			-- 		["harper-ls"] = {
-			-- 			userDictPath = vim.fn.stdpath("config") .. "/spell/en.utf-8.add",
-			-- 		},
-			-- 	},
-			-- })
-			-- vim.lsp.enable("harper_ls")
 		end,
 	},
 	{
