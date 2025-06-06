@@ -72,8 +72,10 @@ vim.keymap.set("n", "<s-tab>", "gT", { silent = true })
 -- Show status line only if there are at least two windows
 vim.opt.laststatus = 1
 
--- Hide command line until typing a command
+-- Hide command line until typing a command or recording a script
 vim.opt.cmdheight = 0
+vim.cmd("autocmd RecordingEnter * set cmdheight=1")
+vim.cmd("autocmd RecordingLeave * set cmdheight=0")
 
 -- Templates
 vim.api.nvim_exec(
@@ -81,7 +83,7 @@ vim.api.nvim_exec(
     augroup templates
         autocmd BufNewFile *.sh 0r ~/.config/nvim/templates/skeleton.sh
     augroup END
-]],
+    ]],
 	true
 )
 
@@ -687,8 +689,8 @@ require("lazy").setup({
 			"nvim-lua/plenary.nvim",
 		},
 	},
-	-- {
-	-- 	"alopatindev/cargo-limit",
-	-- 	build = "cargo install --locked cargo-limit nvim-send",
-	-- },
+	{
+		"alopatindev/cargo-limit",
+		build = "cargo install --locked cargo-limit nvim-send",
+	},
 })

@@ -34,3 +34,6 @@ cargo install --locked --quiet bat fd-find ripgrep skim
 
 # Sql
 cargo install --locked sleek # formatter
+
+# Rust
+cargo install --locked cargo-limit
