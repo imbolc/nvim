@@ -449,7 +449,6 @@ require("lazy").setup({
 		version = "v0.*",
 		opts = {
 			keymap = {
-				preset = "default",
 				["<Tab>"] = { "select_next", "fallback" },
 				["<S-Tab>"] = { "select_prev", "fallback" },
 			},
@@ -496,6 +495,16 @@ require("lazy").setup({
 				accept = {
 					auto_brackets = {
 						enabled = true,
+					},
+				},
+				list = {
+					selection = {
+						preselect = false,
+						auto_insert = true,
+					},
+					cycle = {
+						from_bottom = true,
+						from_top = true,
 					},
 				},
 				menu = {
