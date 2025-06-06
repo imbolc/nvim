@@ -36,4 +36,6 @@ cargo install --locked --quiet bat fd-find ripgrep skim
 cargo install --locked sleek # formatter
 
 # Rust
+rustup component add rust-analyzer
+rustup component add rustfmt --toolchain nightly
 cargo install --locked cargo-limit
