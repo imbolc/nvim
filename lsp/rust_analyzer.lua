@@ -1,3 +1,8 @@
+local function on_attach(client, bufnr)
+	-- Without this rust-analyzer rewrites Treesitter queries from ./after/queries/rust/injections.scm
+	client.server_capabilities.semanticTokensProvider = nil
+end
+
 return {
 	cmd = { "rust-analyzer" },
 	filetypes = { "rust" },
@@ -6,6 +11,7 @@ return {
 		"rust-project.json",
 		".git",
 	},
+	on_attach = on_attach,
 	flags = {
 		debounce_text_changes = 150,
 	},
@@ -14,23 +20,6 @@ return {
 			cargo = {
 				allFeatures = true,
 			},
-			-- completion = {
-			-- 	postfix = {
-			-- 		enable = false,
-			-- 	},
-			-- },
-			-- rustfmt = {
-			--     overrideCommand = { "leptosfmt", "--stdin", "--rustfmt" },
-			-- },
-			-- procMacro = {
-			--     ignored = {
-			--         leptos_macro = {
-			--             -- optional: --
-			--             -- "component",
-			--             "server",
-			--         },
-			--     },
-			-- },
 		},
 	},
 }
