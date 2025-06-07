@@ -300,51 +300,76 @@ require("lazy").setup({
 	},
 	{
 		-- Formatters
-		"nvimdev/guard.nvim",
-		dependencies = {
-			"nvimdev/guard-collection",
-		},
+		"stevearc/conform.nvim",
 		config = function()
-			local ft = require("guard.filetype")
-			local fm = require("guard-collection.formatter")
-
-			-- Use global version of prettier
-			local global_prettier = {
-				cmd = "/usr/bin/nodejs",
-				args = { "/usr/local/bin/prettier", "--stdin-filepath" },
-				fname = true,
-				stdin = true,
-			}
-
-			local rustfmt_nightly = {
-				cmd = "rustup",
-				args = { "run", "nightly", "rustfmt", "--edition", "2024", "--emit", "stdout" },
-				stdin = true,
-			}
-
-			ft("sh"):fmt(fm.shfmt)
-			ft("lua"):fmt(fm.stylua)
-			ft("rust"):fmt(rustfmt_nightly)
-			ft("css,scss,html,javascript,json,json5,vue,yaml"):fmt(global_prettier)
-			ft("markdown"):fmt({
-				cmd = "/usr/bin/nodejs",
-				args = {
-					"/usr/local/bin/prettier",
-					"--print-width",
-					"80",
-					"--prose-wrap",
-					"always",
-					"--stdin-filepath",
+			require("conform").setup({
+				formatters_by_ft = {
+					sh = { "shfmt" },
+					lua = { "stylua" },
+					rust = { "rustfmt_nightly", "injected" },
+					css = { "global_prettier" },
+					scss = { "global_prettier" },
+					html = { "global_prettier" },
+					javascript = { "global_prettier" },
+					json = { "global_prettier" },
+					json5 = { "global_prettier" },
+					vue = { "global_prettier" },
+					yaml = { "global_prettier" },
+					markdown = { "markdown_prettier", "injected" },
+					toml = { "taplo" },
+					python = { "ruff" },
+					sql = { "sleek" },
 				},
-				fname = true,
-				stdin = true,
+				formatters = {
+					global_prettier = {
+						command = "/usr/bin/nodejs",
+						args = { "/usr/local/bin/prettier", "--stdin-filepath", "$FILENAME" },
+						stdin = true,
+					},
+					rustfmt_nightly = {
+						command = "rustup",
+						args = { "run", "nightly", "rustfmt", "--edition", "2024", "--emit", "stdout" },
+						stdin = true,
+					},
+					markdown_prettier = {
+						command = "/usr/bin/nodejs",
+						args = {
+							"/usr/local/bin/prettier",
+							"--print-width",
+							"80",
+							"--prose-wrap",
+							"always",
+							"--stdin-filepath",
+							"$FILENAME",
+						},
+						stdin = true,
+					},
+					sleek = {
+						command = "sleek",
+						stdin = true,
+					},
+				},
+				format_on_save = {
+					timeout_ms = 500,
+					lsp_fallback = true,
+				},
 			})
-			ft("toml"):fmt(fm.taplo)
-			ft("python"):fmt(fm.ruff)
-			ft("sql"):fmt({
-				cmd = "sleek",
-				stdin = true,
-			})
+
+			-- Configure injected language formatting
+			require("conform").formatters.injected = {
+				options = {
+					ignore_errors = false,
+					lang_to_formatters = {
+						sql = { "sleek" },
+						javascript = { "global_prettier" },
+						python = { "ruff" },
+						lua = { "stylua" },
+						rust = { "rustfmt_nightly" },
+						sh = { "shfmt" },
+						bash = { "shfmt" },
+					},
+				},
+			}
 		end,
 	},
 	{
