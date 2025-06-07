@@ -587,31 +587,39 @@ require("lazy").setup({
 		end,
 	},
 	{
-		-- Installer for LSP servers, linters, etc
-		"williamboman/mason.nvim",
+		-- Installer for LSP servers, linters, etc.
+		"mason-org/mason.nvim",
 		build = ":MasonUpdate",
 		config = function()
 			require("mason").setup()
-		end,
-	},
-	{
-		-- Automatic installation of LSP servers, linters, etc
-		"williamboman/mason-lspconfig.nvim",
-		dependencies = {
-			"williamboman/mason.nvim",
-		},
-		config = function()
-			require("mason-lspconfig").setup({
-				-- List of available servers: https://github.com/williamboman/mason-lspconfig.nvim?tab=readme-ov-file#available-lsp-servers
-				ensure_installed = {
-					"lua_ls",
-					"marksman",
-					"typos_lsp",
-				},
-				automatic_installation = true,
-				-- Disable automatic LSP setup since we're using native vim.lsp.enable()
-				automatic_enable = false,
-			})
+
+			local registry = require("mason-registry")
+
+			-- List of packages to ensure are installed
+			-- List of all packages: https://mason-registry.dev/registry/list
+			local ensure_installed = {
+				"lua-language-server",
+				"marksman",
+				"typos-lsp",
+			}
+
+			-- This function will install the packages in the list above
+			-- if they are not already installed.
+			local function ensure_packages_installed()
+				for _, pkg_name in ipairs(ensure_installed) do
+					local pkg = registry.get_package(pkg_name)
+					if not pkg:is_installed() then
+						-- Schedule the installation
+						pkg:install():on("after_success", function()
+							vim.notify(("Package '%s' installed successfully"):format(pkg_name), vim.log.levels.INFO)
+						end)
+					end
+				end
+			end
+
+			-- Get the registry up-to-date and then install packages.
+			-- This runs after Mason's registry is updated.
+			registry.update(ensure_packages_installed)
 		end,
 	},
 	{
