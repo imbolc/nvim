@@ -88,8 +88,8 @@ vim.api.nvim_exec(
 )
 
 vim.diagnostic.config({
-	virtual_text = true, -- single-line errors
-	-- virtual_lines = true, -- multi-line errors
+	-- single-line errors
+	virtual_text = true,
 })
 
 --------------------------------
@@ -112,11 +112,8 @@ vim.cmd([[
     au FileType markdown setlocal wrap
     au FileType markdown setlocal spell
     au FileType markdown setlocal conceallevel=0
-    " au FileType markdown setlocal colorcolumn=80
     au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table -e footnotes % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
     au FileType markdown TSBufDisable highlight
-    " hard wrapping
-    " au FileType markdown setlocal textwidth=80 formatoptions+=t
 ]])
 vim.cmd([[
     au FileType yaml setlocal wrap
@@ -124,7 +121,6 @@ vim.cmd([[
 ]])
 vim.api.nvim_create_autocmd({ "FileType" }, {
 	desc = "Force commentstring to include spaces",
-	-- group = ...,
 	callback = function(event)
 		local cs = vim.bo[event.buf].commentstring
 		vim.bo[event.buf].commentstring = cs:gsub("(%S)%%s", "%1 %%s"):gsub("%%s(%S)", "%%s %1")
@@ -140,18 +136,7 @@ function OpenTodo(in_split, show_errors)
 		end
 	end
 
-	---@param fname string
-	---@return string
-	function resolve_symlink(fname)
-		local expanded = vim.uv.fs_realpath(fname)
-		if expanded ~= nil then
-			return expanded
-		end
-		return fname
-	end
-
 	for _, filename in ipairs(possible_files) do
-		-- filename = vim.uv.fs_realpath(filename) or filename
 		if vim.fn.filereadable(filename) == 1 then
 			vim.print(filename)
 			table.insert(existing_files, filename)
@@ -276,7 +261,6 @@ require("lazy").setup({
 			require("lsp_signature").setup(opts)
 		end,
 	},
-	"Xuyuanp/sqlx-rs.nvim",
 	{
 		"pappasam/papercolor-theme-slim",
 		config = function()
@@ -317,8 +301,6 @@ require("lazy").setup({
 	{
 		-- Formatters
 		"nvimdev/guard.nvim",
-		-- "guard.nvim",
-		-- dir = "/home/imbolc/0/open/guard.nvim",
 		dependencies = {
 			"nvimdev/guard-collection",
 		},
@@ -394,10 +376,6 @@ require("lazy").setup({
 				},
 				highlight = {
 					enable = true,
-					-- Setting this to true will run `:h syntax` and tree-sitter at the same time.
-					-- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
-					-- Using this option may slow down your editor, and you may see some duplicate highlights.
-					-- Instead of true it can also be a list of languages
 					additional_vim_regex_highlighting = false,
 				},
 				indent = {
@@ -409,7 +387,6 @@ require("lazy").setup({
 			})
 		end,
 	},
-	-- Ensure this file is placed correctly for lazy.nvim, e.g., lua/plugins/fzf-lua.lua
 	{
 		"ibhagwan/fzf-lua",
 		config = function()
@@ -533,9 +510,7 @@ require("lazy").setup({
 	},
 	{
 		-- Native LSP configuration (Neovim 0.11+)
-		-- This replaces nvim-lspconfig with Neovim's built-in LSP configuration system
 		-- LSP server configs are loaded from ~/.config/nvim/lsp/*.lua files
-		-- Uses vim.lsp.config() and vim.lsp.enable() for cleaner, more maintainable setup
 		name = "native-lsp",
 		dir = vim.fn.stdpath("config"),
 		config = function()
@@ -545,10 +520,6 @@ require("lazy").setup({
 				signs = true,
 				update_in_insert = true,
 			})
-
-			-- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "single" })
-			-- vim.lsp.handlers["textDocument/signatureHelp"] =
-			-- 	vim.lsp.with(vim.lsp.handlers.signature_help, { border = "single" })
 
 			-- Global LSP configuration that applies to all servers
 			vim.lsp.config("*", {
@@ -634,12 +605,7 @@ require("lazy").setup({
 				-- List of available servers: https://github.com/williamboman/mason-lspconfig.nvim?tab=readme-ov-file#available-lsp-servers
 				ensure_installed = {
 					"lua_ls",
-					"rust_analyzer",
-					"bashls",
-					"biome",
 					"marksman",
-					"ruff",
-					"vuels",
 					"typos_lsp",
 				},
 				automatic_installation = true,
@@ -651,7 +617,6 @@ require("lazy").setup({
 	{
 		--- LSP progress at the bottom-right
 		"j-hui/fidget.nvim",
-		tag = "v1.4.1",
 		config = function()
 			require("fidget").setup()
 		end,

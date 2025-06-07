@@ -7,8 +7,6 @@ git clone git@github.com:imbolc/nvim.git ~/.config/nvim
 git clone git@github.com:imbolc/notes.git ~/Documents/notes
 ```
 
-## TODO
-
-Bugs:
-
-- Auto-completion: first tab hit selects the second item
+```sql
+SELECT ARRAY [1, 2];
+```
