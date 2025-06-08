@@ -317,7 +317,7 @@ require("lazy").setup({
 					yaml = { "global_prettier" },
 					markdown = { "markdown_prettier", "injected" },
 					toml = { "taplo" },
-					python = { "ruff" },
+					python = { "ruff_format", "ruff_organize_imports" },
 					sql = { "sleek" },
 				},
 				formatters = {
@@ -358,11 +358,11 @@ require("lazy").setup({
 			-- Configure injected language formatting
 			require("conform").formatters.injected = {
 				options = {
-					ignore_errors = false,
+					ignore_errors = true,
 					lang_to_formatters = {
 						sql = { "sleek" },
 						javascript = { "global_prettier" },
-						python = { "ruff" },
+						python = { "ruff_format", "ruff_organize_imports" },
 						lua = { "stylua" },
 						rust = { "rustfmt_nightly" },
 						sh = { "shfmt" },
@@ -603,7 +603,7 @@ require("lazy").setup({
 				"rust_analyzer",
 				"typos_lsp",
 				"vuels",
-				"harper_ls",
+				-- "harper_ls",
 			}
 
 			for _, server in ipairs(servers) do
