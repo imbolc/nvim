@@ -1,21 +1,21 @@
 #!/usr/bin/env sh
 set -eux
 
-# JS / CSS
-sudo npm install -g prettier@latest yaml-unist-parser@latest
-sudo npm install -g @biomejs/biome@latest
+# CSS, JS
+sudo npm install -g prettier@latest yaml-unist-parser@latest # formatter
+sudo npm install -g @biomejs/biome@latest                    # formatter, LSP
 
 # Vue
-sudo npm install -g vls@latest
+sudo npm install -g vls@latest # LSP
 
 # Sh
-sudo apt install -y shellcheck # linter, used automatically by bash-language-server
-sudo apt install -y shfmt      # formatter
-sudo npm install -g bash-language-server@latest
+sudo apt install -y shellcheck                  # linter
+sudo apt install -y shfmt                       # formatter
+sudo npm install -g bash-language-server@latest # LSP, uses shellcheck
 
 # Spelling / Grammar
-cargo install --locked --quiet typos-cli
-cargo install --locked harper-ls
+cargo install --locked --quiet typos-cli # LSP
+cargo install --locked --quiet harper-ls # LSP
 
 # Markdown
 cargo install --locked --quiet comrak # renderer
