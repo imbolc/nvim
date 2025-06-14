@@ -138,7 +138,7 @@ function OpenTodo(in_split, show_errors)
 
 	for _, filename in ipairs(possible_files) do
 		if vim.fn.filereadable(filename) == 1 then
-			vim.print(filename)
+			-- vim.print(filename)
 			table.insert(existing_files, filename)
 		end
 	end
@@ -312,7 +312,9 @@ require("lazy").setup({
 					lua = { "stylua" },
 					markdown = { "markdown_prettier", "injected" },
 					python = { "ruff_format", "ruff_organize_imports" },
-					rust = { "rustfmt_nightly", "injected" },
+					-- rust `injected` breaks Maud templates
+					-- rust = { "rustfmt_nightly", "injected" },
+					rust = { "rustfmt_nightly" },
 					sh = { "shfmt" },
 					sql = { "sleek" },
 					toml = { "taplo" },

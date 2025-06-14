@@ -18,7 +18,8 @@ return {
 	settings = {
 		["rust-analyzer"] = {
 			cargo = {
-				allFeatures = true,
+				-- It would enable "ci" feature
+				-- allFeatures = true,
 			},
 		},
 	},
