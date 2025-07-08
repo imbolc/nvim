@@ -1,7 +1,9 @@
 -- Install dependencies: ./install.sh
+
 vim.g.mapleader = ","
 
 vim.opt.mouse = ""
+vim.opt.clipboard = "unnamedplus" -- yank into system clipboard (to paste witch CTRL-V)
 
 vim.opt.autowrite = true -- automatically :write before running a commands
 vim.opt.spell = true
@@ -78,14 +80,13 @@ vim.cmd("autocmd RecordingEnter * set cmdheight=1")
 vim.cmd("autocmd RecordingLeave * set cmdheight=0")
 
 -- Templates
-vim.api.nvim_exec(
-	[[
-    augroup templates
-        autocmd BufNewFile *.sh 0r ~/.config/nvim/templates/skeleton.sh
-    augroup END
-    ]],
-	true
-)
+local templates_augroup = vim.api.nvim_create_augroup("templates", { clear = true })
+vim.api.nvim_create_autocmd("BufNewFile", {
+	group = templates_augroup,
+	pattern = "*.sh",
+	desc = "Load skeleton for shell scripts",
+	command = "0r ~/.config/nvim/templates/skeleton.sh",
+})
 
 vim.diagnostic.config({
 	-- single-line errors
