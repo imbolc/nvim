@@ -3,7 +3,6 @@
 vim.g.mapleader = ","
 
 vim.opt.mouse = ""
-vim.opt.clipboard = "unnamedplus" -- yank into system clipboard (to paste witch CTRL-V)
 
 vim.opt.autowrite = true -- automatically :write before running a commands
 vim.opt.spell = true
@@ -110,7 +109,7 @@ vim.cmd([[au FileType python map <buffer> <leader>r :w\|!python3 %<cr>]])
 vim.cmd([[au FileType html map <buffer> <leader>r :w\|!open %<cr>]])
 vim.cmd([[au FileType javascript map <buffer> <leader>r :w\|!node %<cr>]])
 vim.cmd([[
-    au FileType markdown setlocal wrap
+    " au FileType markdown setlocal wrap
     au FileType markdown setlocal spell
     au FileType markdown setlocal conceallevel=0
     au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table -e footnotes % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
@@ -364,6 +363,7 @@ require("lazy").setup({
 					lang_to_formatters = {
 						bash = { "shfmt" },
 						css = { "biome" },
+						html = { "global_prettier" },
 						javascript = { "biome", "biome-organize-imports" },
 						json = { "biome" },
 						json5 = { "global_prettier" },
@@ -671,5 +671,14 @@ require("lazy").setup({
 	{
 		"alopatindev/cargo-limit",
 		build = "cargo install --locked cargo-limit nvim-send",
+	},
+	{
+		"nativerv/cyrillic.nvim",
+		event = { "VeryLazy" },
+		config = function()
+			require("cyrillic").setup({
+				no_cyrillic_abbrev = false, -- default
+			})
+		end,
 	},
 })
