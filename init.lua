@@ -127,8 +127,8 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 	end,
 })
 
-function OpenTodo(in_split, show_errors)
-	local possible_files = { ".todo", ".todo.txt", ".todo.md", "var/todo.txt", "var/todo.md" }
+function OpenDefault(in_split, show_errors)
+	local possible_files = { ".todo", ".todo.txt", ".todo.md", "var/todo.txt", "var/todo.md", "README.md" }
 	local existing_files = {}
 	local function error(msg)
 		if show_errors then
@@ -159,7 +159,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
 	callback = function()
 		if vim.fn.argc() == 0 then
 			vim.defer_fn(function()
-				OpenTodo(false, false)
+				OpenDefault(false, false)
 			end, 0)
 		end
 	end,
