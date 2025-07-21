@@ -127,39 +127,38 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 	end,
 })
 
-function OpenDefault(in_split, show_errors)
-	local possible_files = { ".todo", ".todo.txt", ".todo.md", "var/todo.txt", "var/todo.md", "README.md" }
-	local existing_files = {}
-	local function error(msg)
-		if show_errors then
-			vim.notify(msg, vim.log.levels.ERROR)
-		end
+--- Opens the first found TODO (or README) file in the current directory.
+---
+--- @param in_split boolean  If true, open file in a vsplit; otherwise, open in current window.
+--- @param or_readme boolean  If true, also consider README.md as a candidate file.
+--- @param show_errors boolean  If true, notify user if no file is found.
+function OpenTodo(in_split, or_readme, show_errors)
+	local possible_files = { ".todo", ".todo.txt", ".todo.md", "var/todo.txt", "var/todo.md" }
+	if or_readme then
+		table.insert(possible_files, "README.md")
 	end
 
 	for _, filename in ipairs(possible_files) do
+		-- vim.print(filename)
 		if vim.fn.filereadable(filename) == 1 then
-			-- vim.print(filename)
-			table.insert(existing_files, filename)
+			vim.cmd((in_split and "vsplit" or "edit") .. " " .. filename)
+			return
 		end
 	end
 
-	if #existing_files == 0 then
-		error("No TODO file found, tried:\n" .. table.concat(possible_files, "\n"))
-	elseif #existing_files > 1 then
-		error("Multiple TODO files found:\n" .. table.concat(existing_files, "\n"))
-	else
-		vim.cmd((in_split and "vsplit" or "edit") .. " " .. existing_files[1])
+	if show_errors then
+		vim.notify("No TODO file found\n", vim.log.levels.ERROR)
 	end
 end
 
-vim.keymap.set("n", "<leader>t", "<cmd>lua OpenTodo(true, true)<cr>", { silent = true })
+vim.keymap.set("n", "<leader>t", "<cmd>lua OpenTodo(true, false, true)<cr>", { silent = true })
 vim.keymap.set("n", "<leader>T", "<cmd>vs ~/Documents/todo.md<cr>", { silent = true })
 
 vim.api.nvim_create_autocmd("VimEnter", {
 	callback = function()
 		if vim.fn.argc() == 0 then
 			vim.defer_fn(function()
-				OpenDefault(false, false)
+				OpenTodo(false, true, false)
 			end, 0)
 		end
 	end,
