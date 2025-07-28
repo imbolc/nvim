@@ -48,6 +48,75 @@ vim.opt.updatetime = 100
 vim.keymap.set("x", "<", "<gv", { silent = true })
 vim.keymap.set("x", ">", ">gv", { silent = true })
 
+-- Autocompletion
+vim.opt.completeopt = { "menuone", "noselect", "popup", "fuzzy" }
+
+-- Enable built-in LSP completion on attach
+vim.api.nvim_create_autocmd("LspAttach", {
+	callback = function(ev)
+		local client = vim.lsp.get_client_by_id(ev.data.client_id)
+		if client.supports_method("textDocument/completion") then
+			vim.lsp.completion.enable(true, client.id, ev.buf, {
+				autotrigger = true,
+				convert = function(item)
+					return { abbr = item.label:gsub("%b()", "") }
+				end,
+			})
+		end
+	end,
+})
+
+-- Auto-trigger path completion
+vim.api.nvim_create_autocmd("TextChangedI", {
+	callback = function()
+		if vim.fn.pumvisible() == 1 then
+			return
+		end
+
+		-- Helper to recognise likely path fragments
+		local function looks_like_path()
+			local col = vim.fn.col(".") - 1
+			if col <= 0 then
+				return false
+			end
+			local before = vim.fn.getline("."):sub(1, col)
+			return before:match("~/?") or before:match("%./") or before:match("%../") or before:match("/[%w%._-]*$")
+		end
+
+		if looks_like_path() then
+			vim.fn.complete(vim.fn.col("."), vim.fn.getcompletion("", "file"))
+		end
+	end,
+})
+
+-- Smart Tab for completion: trigger/navigate or insert tab
+function InsertTabWrapper()
+	if vim.fn.pumvisible() == 1 then
+		return vim.api.nvim_replace_termcodes("<C-n>", true, true, true)
+	end
+	local col = vim.fn.col(".") - 1
+	if col == 0 or vim.fn.getline("."):sub(col, col):match("%s") then
+		return vim.api.nvim_replace_termcodes("<Tab>", true, true, true)
+	else
+		-- Try file path completion first, then fallback to LSP omni completion
+		local line = vim.fn.getline(".")
+		local cursor_col = vim.fn.col(".")
+		local before_cursor = line:sub(1, cursor_col - 1)
+
+		-- Check if we're typing a path (contains / or . or ~)
+		if before_cursor:match("[/.~]") then
+			return vim.api.nvim_replace_termcodes("<C-x><C-f>", true, true, true)
+		else
+			return vim.api.nvim_replace_termcodes("<C-x><C-o>", true, true, true)
+		end
+	end
+end
+
+vim.keymap.set("i", "<Tab>", "v:lua.InsertTabWrapper()", { expr = true, silent = true })
+vim.keymap.set("i", "<S-Tab>", function()
+	return vim.fn.pumvisible() == 1 and "<C-p>" or "<S-Tab>"
+end, { expr = true, silent = true })
+
 -- Splits
 vim.opt.splitbelow = true
 vim.opt.splitright = true
@@ -77,6 +146,20 @@ vim.opt.laststatus = 1
 vim.opt.cmdheight = 0
 vim.cmd("autocmd RecordingEnter * set cmdheight=1")
 vim.cmd("autocmd RecordingLeave * set cmdheight=0")
+
+-- Would it help with losing access to clipboard?
+vim.g.clipboard = {
+	name = "xclip",
+	copy = {
+		["+"] = "xclip -selection clipboard",
+		["*"] = "xclip -selection primary",
+	},
+	paste = {
+		["+"] = "xclip -selection clipboard -o",
+		["*"] = "xclip -selection primary -o",
+	},
+	cache_enabled = 1,
+}
 
 -- Templates
 local templates_augroup = vim.api.nvim_create_augroup("templates", { clear = true })
@@ -451,88 +534,6 @@ require("lazy").setup({
 		end,
 	},
 	{
-		--- Autocompletion
-		"saghen/blink.cmp",
-		dependencies = "rafamadriz/friendly-snippets",
-		version = "v0.*",
-		opts = {
-			keymap = {
-				["<Tab>"] = { "select_next", "fallback" },
-				["<S-Tab>"] = { "select_prev", "fallback" },
-			},
-			appearance = {
-				use_nvim_cmp_as_default = true,
-				kind_icons = {
-					Text = "",
-					Method = "",
-					Function = "",
-					Constructor = "",
-					Field = "",
-					Variable = "",
-					Class = "",
-					Interface = "",
-					Module = "",
-					Property = "",
-					Unit = "",
-					Value = "",
-					Enum = "",
-					Keyword = "",
-					Snippet = "",
-					Color = "",
-					File = "",
-					Reference = "",
-					Folder = "",
-					EnumMember = "",
-					Constant = "",
-					Struct = "",
-					Event = "",
-					Operator = "",
-					TypeParameter = "",
-				},
-			},
-			sources = {
-				default = { "lsp", "path", "snippets", "buffer" },
-				providers = {
-					buffer = {
-						name = "Buffer",
-						module = "blink.cmp.sources.buffer",
-					},
-				},
-			},
-			completion = {
-				accept = {
-					auto_brackets = {
-						enabled = true,
-					},
-				},
-				list = {
-					selection = {
-						preselect = false,
-						auto_insert = true,
-					},
-					cycle = {
-						from_bottom = true,
-						from_top = true,
-					},
-				},
-				menu = {
-					draw = {
-						treesitter = { "lsp" },
-						columns = { { "label", "label_description", gap = 1 } },
-					},
-				},
-				documentation = {
-					auto_show = true,
-					auto_show_delay_ms = 200,
-				},
-			},
-			signature = {
-				enabled = true,
-			},
-		},
-		opts_extend = { "sources.default" },
-	},
-	{
 		"preservim/vim-markdown",
 		dependencies = { "godlygeek/tabular" },
 		config = function()
@@ -552,17 +553,11 @@ require("lazy").setup({
 				update_in_insert = true,
 			})
 
-			-- Global LSP configuration that applies to all servers
-			vim.lsp.config("*", {
-				capabilities = require("blink.cmp").get_lsp_capabilities(),
-			})
-
 			-- Set up LspAttach autocommand for keybindings
 			vim.api.nvim_create_autocmd("LspAttach", {
 				group = vim.api.nvim_create_augroup("UserLspConfig", {}),
 				callback = function(ev)
 					local bufnr = ev.buf
-					local client = vim.lsp.get_client_by_id(ev.data.client_id)
 
 					local function map(mode, lhs, rhs, opts)
 						opts = opts or {}
@@ -668,10 +663,6 @@ require("lazy").setup({
 		},
 	},
 	{
-		"alopatindev/cargo-limit",
-		build = "cargo install --locked cargo-limit nvim-send",
-	},
-	{
 		"nativerv/cyrillic.nvim",
 		event = { "VeryLazy" },
 		config = function()
@@ -679,5 +670,9 @@ require("lazy").setup({
 				no_cyrillic_abbrev = false, -- default
 			})
 		end,
+	},
+	{
+		"alopatindev/cargo-limit",
+		build = "cargo install --locked cargo-limit nvim-send",
 	},
 })
