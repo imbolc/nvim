@@ -14,8 +14,8 @@ vim.opt.writebackup = false
 vim.opt.swapfile = false
 
 -- Line numbers
-vim.opt.number = true
-vim.opt.relativenumber = true
+-- vim.opt.number = true
+-- vim.opt.relativenumber = true
 vim.opt.signcolumn = "no" -- do dot display sign column to have more horizontal space
 
 vim.api.nvim_command("autocmd ColorScheme * highlight VertSplit guibg=bg guifg=white")
@@ -34,6 +34,7 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.inccommand = "split" -- preview substitutions
 vim.opt.gdefault = true
+vim.opt.incsearch = true
 
 -- Indentation
 vim.opt.expandtab = true
