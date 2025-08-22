@@ -14,8 +14,8 @@ vim.opt.writebackup = false
 vim.opt.swapfile = false
 
 -- Line numbers
--- vim.opt.number = true
--- vim.opt.relativenumber = true
+vim.opt.number = true
+vim.opt.relativenumber = true
 vim.opt.signcolumn = "no" -- do dot display sign column to have more horizontal space
 
 vim.api.nvim_command("autocmd ColorScheme * highlight VertSplit guibg=bg guifg=white")
@@ -412,7 +412,7 @@ require("lazy").setup({
 					},
 					rustfmt_nightly = {
 						command = "rustup",
-						args = { "run", "nightly", "rustfmt", "--edition", "2024", "--emit", "stdout" },
+						args = { "run", "nightly", "rustfmt", "--emit", "stdout" },
 						stdin = true,
 					},
 					markdown_prettier = {
@@ -676,4 +676,13 @@ require("lazy").setup({
 		"alopatindev/cargo-limit",
 		build = "cargo install --locked cargo-limit nvim-send",
 	},
+
+	-- {
+	-- 	"rayliwell/tree-sitter-rstml",
+	-- 	dependencies = { "nvim-treesitter" },
+	-- 	build = ":TSUpdate",
+	-- 	config = function()
+	-- 		require("tree-sitter-rstml").setup()
+	-- 	end,
+	-- },
 })
