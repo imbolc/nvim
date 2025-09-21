@@ -60,7 +60,21 @@ vim.api.nvim_create_autocmd("LspAttach", {
 			vim.lsp.completion.enable(true, client.id, ev.buf, {
 				autotrigger = true,
 			})
+			-- Remember that this buffer exposes LSP completion so insert-mode events can auto-pop the menu.
+			vim.api.nvim_buf_set_var(ev.buf, "has_lsp_completion", true)
 		end
+	end,
+})
+
+vim.api.nvim_create_autocmd("LspDetach", {
+	callback = function(ev)
+		-- Remove the marker only if no remaining client supports completion for this buffer.
+		for _, client in ipairs(vim.lsp.get_clients({ bufnr = ev.buf })) do
+			if client:supports_method("textDocument/completion") then
+				return
+			end
+		end
+		pcall(vim.api.nvim_buf_del_var, ev.buf, "has_lsp_completion")
 	end,
 })
 
@@ -83,7 +97,43 @@ vim.api.nvim_create_autocmd("TextChangedI", {
 
 		if looks_like_path() then
 			vim.fn.complete(vim.fn.col("."), vim.fn.getcompletion("", "file"))
+			return
 		end
+
+		-- Skip auto-completion if the buffer has no LSP completion provider.
+		if not vim.b.has_lsp_completion then
+			return
+		end
+
+		local col = vim.fn.col(".") - 1
+		if col <= 0 then
+			return
+		end
+
+		local line = vim.fn.getline(".")
+		local char = line:sub(col, col)
+		if not char or not char:match("[%w_]") then
+			return
+		end
+
+		local prefix = line:sub(1, col):match("[%w_]+$")
+		if not prefix or prefix == "" then
+			return
+		end
+
+		-- Queue the omnifunc trigger so the popup matches the freshly typed prefix without blocking input.
+		local bufnr = vim.api.nvim_get_current_buf()
+		vim.schedule(function()
+			if not vim.api.nvim_buf_is_valid(bufnr) or vim.api.nvim_get_current_buf() ~= bufnr then
+				return
+			end
+			if vim.fn.mode() ~= "i" or vim.fn.pumvisible() == 1 then
+				return
+			end
+			-- Feed <C-x><C-o> so Neovim's LSP omnifunc narrows the popup to the current prefix automatically.
+			local keys = vim.api.nvim_replace_termcodes("<C-x><C-o>", true, true, true)
+			vim.api.nvim_feedkeys(keys, "n", false)
+		end)
 	end,
 })
 
