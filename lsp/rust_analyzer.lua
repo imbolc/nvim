@@ -17,6 +17,11 @@ return {
 	},
 	settings = {
 		["rust-analyzer"] = {
+			-- Prevent completions from inserting call parentheses so selecting a function name keeps it as-is.
+			completion = {
+				addCallParenthesis = false,
+				addCallArgumentSnippets = false,
+			},
 			cargo = {
 				-- It would enable "ci" feature
 				-- allFeatures = true,
