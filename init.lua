@@ -85,33 +85,33 @@ vim.api.nvim_create_autocmd("TextChangedI", {
 			return
 		end
 
-	-- Helper that extracts the path-like prefix under the cursor so we can offer directory-aware completions immediately after typing `/`.
-	local function extract_path_prefix()
-		local col = vim.fn.col(".") - 1
-		if col <= 0 then
+		-- Helper that extracts the path-like prefix under the cursor so we can offer directory-aware completions immediately after typing `/`.
+		local function extract_path_prefix()
+			local col = vim.fn.col(".") - 1
+			if col <= 0 then
+				return nil
+			end
+			local before = vim.fn.getline("."):sub(1, col)
+			local path = before:match("([%w%._~%-/]+)$")
+			if not path then
+				return nil
+			end
+			if path:find("/") or path:match("^~") or path:match("^%./") or path:match("^%.%./") then
+				return path
+			end
 			return nil
 		end
-		local before = vim.fn.getline("."):sub(1, col)
-		local path = before:match("([%w%._~%-/]+)$")
-		if not path then
-			return nil
-		end
-		if path:find("/") or path:match("^~") or path:match("^%./") or path:match("^%.%./") then
-			return path
-		end
-		return nil
-	end
 
-	-- When we have a path prefix, ask Vim for file matches rooted at that prefix so `/` keeps listing directory entries.
-	local path_prefix = extract_path_prefix()
-	if path_prefix then
-		local startcol = vim.fn.col(".") - #path_prefix
-		local matches = vim.fn.getcompletion(path_prefix, "file")
-		if matches and #matches > 0 then
-			vim.fn.complete(startcol, matches)
-			return
+		-- When we have a path prefix, ask Vim for file matches rooted at that prefix so `/` keeps listing directory entries.
+		local path_prefix = extract_path_prefix()
+		if path_prefix then
+			local startcol = vim.fn.col(".") - #path_prefix
+			local matches = vim.fn.getcompletion(path_prefix, "file")
+			if matches and #matches > 0 then
+				vim.fn.complete(startcol, matches)
+				return
+			end
 		end
-	end
 
 		-- Skip auto-completion if the buffer has no LSP completion provider.
 		if not vim.b.has_lsp_completion then
@@ -659,6 +659,7 @@ require("lazy").setup({
 			local servers = {
 				"bashls",
 				"biome",
+				"denols",
 				"lua_ls",
 				"marksman",
 				"ruff",

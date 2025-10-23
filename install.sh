@@ -4,6 +4,7 @@ set -eux
 # CSS, JS
 sudo npm install -g prettier@latest yaml-unist-parser@latest # formatter
 sudo npm install -g @biomejs/biome@latest                    # formatter, LSP
+sudo npm install -g deno                                     # LSP with renaming capabilities
 
 # Vue
 sudo npm install -g vls@latest # LSP

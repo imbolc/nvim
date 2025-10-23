@@ -1,5 +1,9 @@
 It's a repo for a Neovim configuration.
 
+## LSP
+
+The config is used native Nvim LSP capabilities with configs located in `./lsp/`
+
 ## Conventions
 
 - The entire configuration is in `./init.lua`. Keep it that way; never split the
