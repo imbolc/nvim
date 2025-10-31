@@ -239,6 +239,13 @@ vim.diagnostic.config({
 --------------------------------
 -- File type related settings --
 --------------------------------
+-- Treat `.env.local` files as shell scripts so they get sh highlighting/completion in this setup.
+vim.filetype.add({
+	filename = {
+		[".env.local"] = "sh",
+	},
+})
+
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = "sql",
 	callback = function()
