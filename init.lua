@@ -284,7 +284,17 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 --- @param or_readme boolean  If true, also consider README.md as a candidate file.
 --- @param show_errors boolean  If true, notify user if no file is found.
 function OpenTodo(in_split, or_readme, show_errors)
-	local possible_files = { ".todo", ".todo.txt", ".todo.md", "var/todo.txt", "var/todo.md" }
+	local possible_files = {
+		".todo",
+		".todo.txt",
+		".todo.md",
+		"todo.txt",
+		"todo.md",
+		"TODO.txt",
+		"TODO.md",
+		"var/todo.txt",
+		"var/todo.md",
+	}
 	if or_readme then
 		table.insert(possible_files, "README.md")
 	end
