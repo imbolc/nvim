@@ -550,6 +550,8 @@ require("lazy").setup({
 					"css",
 					"html",
 					"javascript",
+					-- Include jsdoc so Tree-sitter can parse documentation comments and suppress spell checking inside type expressions.
+					"jsdoc",
 					"json",
 					"json5",
 					"lua",
@@ -753,6 +755,16 @@ require("lazy").setup({
 	{
 		"alopatindev/cargo-limit",
 		build = "cargo install --locked cargo-limit nvim-send",
+	},
+
+	{
+		"mrxiaozhuox/dioxus.nvim",
+		opts = {
+			format = {
+				-- split_line_attributes = true,
+			},
+		},
+		ft = "rust",
 	},
 
 	-- {
