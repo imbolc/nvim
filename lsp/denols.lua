@@ -4,15 +4,22 @@ return {
 		"javascript",
 	},
 	root_markers = {
-		"deno.json",
 		"deno.jsonc",
-		"import_map.json",
+		"deno.json",
+		".git",
 		"jsconfig.json",
+		"import_map.json",
 	},
 	single_file_support = true,
 	init_options = {
 		enable = true,
 		lint = true,
 		unstable = false,
+	},
+	suggest = {
+		autoImports = true,
+		imports = {
+			autoDiscover = true,
+		},
 	},
 }

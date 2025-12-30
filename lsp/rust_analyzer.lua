@@ -26,6 +26,10 @@ return {
 				-- It would enable "ci" feature
 				-- allFeatures = true,
 			},
+			rustfmt = {
+				-- Pipe rustfmt output through dx fmt so Rust files are post-processed with dx formatting rules.
+				overrideCommand = { "sh", "-c", "rustfmt --edition 2024 --emit stdout | dx fmt -f -" },
+			},
 		},
 	},
 }

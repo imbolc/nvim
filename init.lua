@@ -468,6 +468,7 @@ require("lazy").setup({
 					html = { "global_prettier" },
 					javascript = { "biome", "biome-organize-imports" },
 					json = { "biome" },
+					jsonc = { "biome" },
 					json5 = { "global_prettier" },
 					lua = { "stylua" },
 					markdown = { "markdown_prettier", "injected" },
@@ -488,8 +489,9 @@ require("lazy").setup({
 						stdin = true,
 					},
 					rustfmt_nightly = {
-						command = "rustup",
-						args = { "run", "nightly", "rustfmt", "--emit", "stdout" },
+						-- Run rustfmt from nightly toolchain and pipe the result through dx fmt so dx postprocesses Rust code.
+						command = "sh",
+						args = { "-c", "rustup run nightly rustfmt --emit stdout | dx fmt -f -" },
 						stdin = true,
 					},
 					markdown_prettier = {
