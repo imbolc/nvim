@@ -200,6 +200,20 @@ vim.keymap.set("n", "q:", "<nop>", { silent = true })
 vim.keymap.set("n", "<tab>", "gt", { silent = true })
 vim.keymap.set("n", "<s-tab>", "gT", { silent = true })
 
+-- Copy selection to the system clipboard
+vim.keymap.set({ "v" }, "<leader>y", '"+y', { silent = true })
+
+-- Copy the current buffer's full path into the primary selection (*) register
+vim.keymap.set("n", "<leader>yf", function()
+	-- Skip unnamed buffers so we don't yank empty paths.
+	local path = vim.fn.expand("%:.")
+	if path == "" then
+		return
+	end
+	vim.fn.setreg("+", path)
+	vim.notify(string.format("Copied: %s", path))
+end, { silent = true })
+
 -- Show status line only if there are at least two windows
 vim.opt.laststatus = 1
 
@@ -755,7 +769,7 @@ require("lazy").setup({
 		end,
 	},
 	{
-		"alopatindev/cargo-limit",
+		"cargo-limit/cargo-limit",
 		build = "cargo install --locked cargo-limit nvim-send",
 	},
 
