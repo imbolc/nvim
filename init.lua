@@ -214,6 +214,43 @@ vim.keymap.set("n", "<leader>yf", function()
 	vim.notify(string.format("Copied: %s", path))
 end, { silent = true })
 
+-- Configure a notes-only keymap that copies a GitHub link for the current note.
+local NOTES_ROOT = vim.fn.expand("~/Documents/notes")
+-- Use an autocmd to attach the mapping only for buffers inside the notes folder.
+local notes_link_augroup = vim.api.nvim_create_augroup("notes-link", { clear = true })
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+	group = notes_link_augroup,
+	callback = function()
+		-- Avoid redefining the mapping when the same buffer is revisited.
+		if vim.b.notes_link_mapped then
+			return
+		end
+		-- Only set the mapping when the current buffer is within the notes root.
+		local path = vim.fn.expand("%:p")
+		if path == "" then
+			return
+		end
+		if path ~= NOTES_ROOT and not vim.startswith(path, NOTES_ROOT .. "/") then
+			return
+		end
+
+		-- Mark the buffer so we only set the mapping once per notes buffer.
+		vim.b.notes_link_mapped = true
+
+		vim.keymap.set("n", "<leader>yl", function()
+			-- Build and copy the notes URL relative to the notes root.
+			local note_path = vim.fn.expand("%:p")
+			if note_path == "" then
+				return
+			end
+			local rel_path = note_path:sub(#NOTES_ROOT + 2)
+			local url = string.format("https://github.com/imbolc/notes/tree/main/%s", rel_path)
+			vim.fn.setreg("+", url)
+			vim.notify(string.format("Copied: %s", url))
+		end, { silent = true, buffer = 0, desc = "Copy Notes Link" })
+	end,
+})
+
 -- Show status line only if there are at least two windows
 vim.opt.laststatus = 1
 
@@ -622,7 +659,7 @@ require("lazy").setup({
 			end, { silent = true, desc = "Find Files" })
 
 			vim.keymap.set("n", "<leader>n", function()
-				fzf_lua.files({ cwd = vim.fn.expand("~/Documents/notes") })
+				fzf_lua.files({ cwd = NOTES_ROOT })
 			end, { silent = true, desc = "Find Notes" })
 
 			vim.keymap.set("n", "<leader>g", function()
