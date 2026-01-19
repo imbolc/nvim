@@ -1,6 +1,6 @@
 -- Install dependencies: ./install.sh
 
-vim.g.mapleader = ","
+vim.g.mapleader = " "
 
 vim.opt.mouse = ""
 
@@ -264,20 +264,21 @@ vim.api.nvim_create_autocmd("FileType", {
 	pattern = "sql",
 	callback = function()
 		vim.bo.commentstring = "-- %s"
-		vim.api.nvim_buf_set_keymap(0, "n", "<leader>r", ":w|!psql -a -f %<CR>", { noremap = true, silent = true })
+		-- Use <leader>x for run commands to keep <leader>r for LSP rename.
+		vim.api.nvim_buf_set_keymap(0, "n", "<leader>x", ":w|!psql -a -f %<CR>", { noremap = true, silent = true })
 	end,
 })
-vim.cmd([[au FileType lua map <buffer> <leader>r :w\| :source  %<cr>]])
-vim.cmd([[au FileType rust map <buffer> <leader>r :w\|! DATABASE_URL=postgres:/// rust-script %<cr>]])
-vim.cmd([[au FileType sh map <buffer> <leader>r :w\|!sh %<cr>]])
-vim.cmd([[au FileType python map <buffer> <leader>r :w\|!python3 %<cr>]])
-vim.cmd([[au FileType html map <buffer> <leader>r :w\|!open %<cr>]])
-vim.cmd([[au FileType javascript map <buffer> <leader>r :w\|!node %<cr>]])
+vim.cmd([[au FileType lua map <buffer> <leader>x :w\| :source  %<cr>]])
+vim.cmd([[au FileType rust map <buffer> <leader>x :w\|! DATABASE_URL=postgres:/// rust-script %<cr>]])
+vim.cmd([[au FileType sh map <buffer> <leader>x :w\|!sh %<cr>]])
+vim.cmd([[au FileType python map <buffer> <leader>x :w\|!python3 %<cr>]])
+vim.cmd([[au FileType html map <buffer> <leader>x :w\|!open %<cr>]])
+vim.cmd([[au FileType javascript map <buffer> <leader>x :w\|!node %<cr>]])
 vim.cmd([[
     " au FileType markdown setlocal wrap
     au FileType markdown setlocal spell
     au FileType markdown setlocal conceallevel=0
-    au FileType markdown map <buffer> <leader>r :w\|!comrak --unsafe -e table -e footnotes % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
+    au FileType markdown map <buffer> <leader>x :w\|!comrak --unsafe -e table -e footnotes % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
     au FileType markdown TSBufDisable highlight
 ]])
 vim.cmd([[
@@ -668,13 +669,14 @@ require("lazy").setup({
 					map("n", "gd", vim.lsp.buf.definition)
 					map("n", "gi", vim.lsp.buf.implementation)
 					map("n", "<C-k>", vim.lsp.buf.signature_help)
-					map("n", "<space>D", vim.lsp.buf.type_definition)
-					map("n", "<space>r", vim.lsp.buf.rename)
-					map("n", "<space>a", vim.lsp.buf.code_action)
+					map("n", "<leader>D", vim.lsp.buf.type_definition)
+					map("n", "<leader>r", vim.lsp.buf.rename)
+					map("n", "<leader>a", vim.lsp.buf.code_action)
 					map("n", "gr", vim.lsp.buf.references)
-					map("n", "<space>e", vim.diagnostic.open_float)
-					map("n", "<space>q", vim.diagnostic.setloclist)
-					map("n", "<space>f", function()
+					map("n", "<leader>e", vim.diagnostic.open_float)
+					map("n", "<leader>q", vim.diagnostic.setloclist)
+					-- Use <leader>lf for LSP formatting to avoid clashing with file finder.
+					map("n", "<leader>lf", function()
 						vim.lsp.buf.format({ async = true })
 					end)
 
