@@ -788,7 +788,22 @@ require("lazy").setup({
 		--- LSP progress at the bottom-right
 		"j-hui/fidget.nvim",
 		config = function()
-			require("fidget").setup()
+			require("fidget").setup({
+				-- Route vim.notify() into Fidget so notifications and LSP progress share the same UI.
+				notification = {
+					override_vim_notify = true,
+					-- Anchor notifications at the top-right corner of the editor UI.
+					window = {
+						align = "top",
+						x_padding = 1,
+						y_padding = 1,
+					},
+					-- Stack newer notifications downward so they flow from the top edge.
+					view = {
+						stack_upwards = false,
+					},
+				},
+			})
 		end,
 	},
 	{
