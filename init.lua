@@ -18,6 +18,11 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.signcolumn = "no" -- do dot display sign column to have more horizontal space
 
+-- Folding
+vim.opt.foldmethod = "indent"
+vim.opt.foldenable = false -- Don't fold everything on open
+vim.opt.foldlevel = 99 -- Start with all folds open
+
 vim.api.nvim_command("autocmd ColorScheme * highlight VertSplit guibg=bg guifg=white")
 
 -- Wrapping
