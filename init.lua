@@ -534,7 +534,7 @@ require("lazy").setup({
 					-- rust = { "rustfmt_nightly", "injected" },
 					rust = { "rustfmt_nightly" },
 					sh = { "shfmt" },
-					sql = { "sleek" },
+					-- sql = { "sleek" },
 					toml = { "taplo" },
 					vue = { "global_prettier" },
 					yaml = { "global_prettier" },
@@ -564,10 +564,10 @@ require("lazy").setup({
 						},
 						stdin = true,
 					},
-					sleek = {
-						command = "sleek",
-						stdin = true,
-					},
+					-- sleek = {
+					-- 	command = "sleek",
+					-- 	stdin = true,
+					-- },
 				},
 				format_on_save = {
 					timeout_ms = 500,
@@ -811,13 +811,13 @@ require("lazy").setup({
 			})
 		end,
 	},
-	{
-		--- Replace in multiple files, use `:Spectre` command
-		"nvim-pack/nvim-spectre",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-		},
-	},
+	-- {
+	-- 	--- Replace in multiple files, use `:Spectre` command
+	-- 	"nvim-pack/nvim-spectre",
+	-- 	dependencies = {
+	-- 		"nvim-lua/plenary.nvim",
+	-- 	},
+	-- },
 	{
 		"nativerv/cyrillic.nvim",
 		event = { "VeryLazy" },
@@ -827,20 +827,20 @@ require("lazy").setup({
 			})
 		end,
 	},
-	{
-		"cargo-limit/cargo-limit",
-		build = "cargo install --locked cargo-limit nvim-send",
-	},
+	-- {
+	-- 	"cargo-limit/cargo-limit",
+	-- 	build = "cargo install --locked cargo-limit nvim-send",
+	-- },
 
-	{
-		"mrxiaozhuox/dioxus.nvim",
-		opts = {
-			format = {
-				-- split_line_attributes = true,
-			},
-		},
-		ft = "rust",
-	},
+	-- {
+	-- 	"mrxiaozhuox/dioxus.nvim",
+	-- 	opts = {
+	-- 		format = {
+	-- 			-- split_line_attributes = true,
+	-- 		},
+	-- 	},
+	-- 	ft = "rust",
+	-- },
 
 	-- {
 	-- 	"rayliwell/tree-sitter-rstml",
