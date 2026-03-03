@@ -528,7 +528,15 @@ require("lazy").setup({
 					jsonc = { "biome" },
 					json5 = { "global_prettier" },
 					lua = { "stylua" },
-					markdown = { "markdown_prettier", "injected" },
+					markdown = function(bufnr)
+						-- Skip injected formatting when markdown contains rust,ignore fenced blocks so Conform does not modify or drop ignored Rust examples.
+						for _, line in ipairs(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)) do
+							if line:match("^```%s*rust%s*,%s*ignore[%w_,%-]*%s*$") then
+								return { "markdown_prettier" }
+							end
+						end
+						return { "markdown_prettier", "injected" }
+					end,
 					python = { "ruff_format", "ruff_organize_imports" },
 					-- rust `injected` breaks Maud templates
 					-- rust = { "rustfmt_nightly", "injected" },
@@ -590,7 +598,7 @@ require("lazy").setup({
 						python = { "ruff_format", "ruff_organize_imports" },
 						rust = { "rustfmt_nightly" },
 						sh = { "shfmt" },
-						sql = { "sleek" },
+						-- sql = { "sleek" },
 						toml = { "taplo" },
 						yaml = { "global_prettier" },
 					},
