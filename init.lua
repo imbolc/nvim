@@ -563,6 +563,9 @@ require("lazy").setup({
 						command = "/usr/bin/nodejs",
 						args = {
 							"/usr/local/bin/prettier",
+							-- Bypass .gitignore/.prettierignore path filtering so Markdown files still autoformat even when gitignored.
+							"--ignore-path",
+							"/dev/null",
 							"--print-width",
 							"80",
 							"--prose-wrap",
