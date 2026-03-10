@@ -553,6 +553,24 @@ require("lazy").setup({
 						args = { "/usr/local/bin/prettier", "--stdin-filepath", "$FILENAME" },
 						stdin = true,
 					},
+					taplo = {
+						-- Mirror the buffer's effective indent settings so TOML format-on-save keeps following Neovim's .editorconfig values.
+						args = function(_, ctx)
+							-- Fall back to tabstop when shiftwidth is zero so Taplo still receives a concrete indentation width.
+							local indent_width = ctx.shiftwidth > 0 and ctx.shiftwidth or vim.bo[ctx.buf].tabstop
+							-- Build Taplo's indent string from the current buffer options so tabs and spaces both stay in sync with .editorconfig.
+							local indent_string = vim.bo[ctx.buf].expandtab and string.rep(" ", indent_width) or "\t"
+							return {
+								"format",
+								"--stdin-filepath",
+								ctx.filename,
+								"--option",
+								"indent_string=" .. indent_string,
+								"-",
+							}
+						end,
+						stdin = true,
+					},
 					rustfmt_nightly = {
 						-- Run rustfmt from nightly toolchain and pipe the result through dx fmt so dx postprocesses Rust code.
 						command = "sh",
@@ -767,6 +785,10 @@ require("lazy").setup({
 	{
 		-- Installer for LSP servers, linters, etc.
 		"mason-org/mason.nvim",
+		enabled = function()
+			-- Skip loading the installer in headless sessions so automated checks do not run Mason health or registry jobs.
+			return #vim.api.nvim_list_uis() > 0
+		end,
 		build = ":MasonUpdate",
 		config = function()
 			require("mason").setup()
@@ -795,9 +817,19 @@ require("lazy").setup({
 				end
 			end
 
-			-- Get the registry up-to-date and then install packages.
-			-- This runs after Mason's registry is updated.
-			registry.update(ensure_packages_installed)
+			-- Skip Mason registry work in headless sessions so scripted checks do not start background installs.
+			if #vim.api.nvim_list_uis() == 0 then
+				return
+			end
+
+			-- Refresh the registry before installing packages so interactive startup still self-heals without throwing in restricted headless runs.
+			registry.refresh(function(success)
+				-- Skip automatic installs when the registry refresh fails because package metadata may be unavailable.
+				if not success then
+					return
+				end
+				ensure_packages_installed()
+			end)
 		end,
 	},
 	{

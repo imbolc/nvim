@@ -1,5 +1,5 @@
 /.nvimlog
-/TODO.md
+/.todo.md
 /lazy-lock.json
 /plugin
 /theme.lua
