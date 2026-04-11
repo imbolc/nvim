@@ -321,7 +321,6 @@ vim.cmd([[
     au FileType markdown setlocal spell
     au FileType markdown setlocal conceallevel=0
     au FileType markdown map <buffer> <leader>x :w\|!comrak --unsafe -e table -e footnotes % > /tmp/vim.md.html && xdg-open /tmp/vim.md.html<cr>
-    au FileType markdown TSBufDisable highlight
 ]])
 vim.cmd([[
     au FileType yaml setlocal wrap
@@ -465,9 +464,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-	"rust-lang/rust.vim",
 	"mechatroner/rainbow_csv",
-	"ConradIrwin/vim-bracketed-paste", -- Auto paste mode
 	"junegunn/vim-slash", -- Automatically remove search selection
 	{
 		-- Show function signature when you type
@@ -489,12 +486,6 @@ require("lazy").setup({
 		"dhruvasagar/vim-table-mode",
 		config = function()
 			vim.g.table_mode_corner = "|" -- markdown-compatible corners
-		end,
-	},
-	{
-		"GutenYe/json5.vim",
-		config = function()
-			vim.api.nvim_command("autocmd BufWritePost *.json5 set filetype=json5")
 		end,
 	},
 	{
@@ -629,43 +620,51 @@ require("lazy").setup({
 	},
 	{
 		"nvim-treesitter/nvim-treesitter",
+		-- Use the active branch because the frozen master branch crashes on Markdown highlighting in Nvim 0.12.
+		branch = "main",
+		-- Load at startup because nvim-treesitter's main branch does not support lazy-loading.
+		lazy = false,
 		build = ":TSUpdate",
 		config = function()
-			require("nvim-treesitter.configs").setup({
-				ensure_installed = {
-					"bash",
-					"comment",
+			local treesitter = require("nvim-treesitter")
+
+			-- Install parsers into Neovim's site directory so parser binaries are runtime data instead of files inside the plugin checkout.
+			treesitter.setup({
+				install_dir = vim.fn.stdpath("data") .. "/site",
+			})
+
+			-- Enable native Nvim Tree-sitter highlighting for filetypes whose parsers are managed by nvim-treesitter or bundled with Nvim.
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = {
 					"css",
 					"html",
 					"javascript",
-					-- Include jsdoc so Tree-sitter can parse documentation comments and suppress spell checking inside type expressions.
-					"jsdoc",
 					"json",
 					"json5",
+					"jsonc",
 					"lua",
 					"markdown",
-					"markdown_inline",
 					"python",
+					"query",
 					"rust",
+					"scss",
+					"sh",
+					"sql",
 					"svelte",
 					"toml",
 					"typescript",
 					"vue",
 					"yaml",
-					"query", -- Treesitter
-					"scss",
-					"sql",
 				},
-				highlight = {
-					enable = true,
-					additional_vim_regex_highlighting = false,
-				},
-				indent = {
-					enable = true,
-				},
-				injections = {
-					enable = true,
-				},
+				callback = function()
+					-- Skip buffers whose parser is not installed yet so opening files stays error-free until :TSInstall/:TSUpdate provides it.
+					if not pcall(vim.treesitter.start) then
+						return
+					end
+
+					-- Preserve the previous Tree-sitter indentation behavior using the new nvim-treesitter indentation entry point.
+					vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+				end,
 			})
 		end,
 	},
@@ -699,13 +698,6 @@ require("lazy").setup({
 			vim.keymap.set("n", "<leader>g", function()
 				fzf_lua.live_grep()
 			end, { silent = true, desc = "Live Grep" })
-		end,
-	},
-	{
-		"preservim/vim-markdown",
-		dependencies = { "godlygeek/tabular" },
-		config = function()
-			vim.g.vim_markdown_folding_disabled = 1
 		end,
 	},
 	{
@@ -893,4 +885,9 @@ require("lazy").setup({
 	-- 		require("tree-sitter-rstml").setup()
 	-- 	end,
 	-- },
+}, {
+	rocks = {
+		-- Disable LuaRocks support because this config does not use rock-based plugins and Lazy health otherwise reports missing hererocks.
+		enabled = false,
+	},
 })
