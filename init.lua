@@ -1,4 +1,5 @@
 -- Install dependencies: ./install.sh
+require("vim._core.ui2").enable()
 
 vim.g.mapleader = " "
 
@@ -56,6 +57,7 @@ vim.keymap.set("x", ">", ">gv", { silent = true })
 
 -- Autocompletion
 vim.opt.completeopt = { "menuone", "noselect", "popup", "fuzzy" }
+vim.o.autocomplete = true
 
 -- Enable built-in LSP completion on attach
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -756,21 +758,7 @@ if plugin_loading_enabled then
 	end, { silent = true, desc = "Live Grep" })
 
 	-- Keep Fidget as the notification and LSP progress UI because native progress is not visible with this minimal statusline setup.
-	require("fidget").setup({
-		notification = {
-			override_vim_notify = true,
-			-- Anchor notifications at the top-right corner of the editor UI.
-			window = {
-				align = "top",
-				x_padding = 1,
-				y_padding = 1,
-			},
-			-- Stack newer notifications downward so they flow from the top edge.
-			view = {
-				stack_upwards = false,
-			},
-		},
-	})
+	require("fidget").setup()
 
 	-- Defer Cyrillic keyboard helpers until after startup so the vim.pack migration keeps Lazy's VeryLazy timing.
 	vim.api.nvim_create_autocmd("VimEnter", {
