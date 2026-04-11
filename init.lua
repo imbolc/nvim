@@ -467,15 +467,6 @@ require("lazy").setup({
 	"mechatroner/rainbow_csv",
 	"junegunn/vim-slash", -- Automatically remove search selection
 	{
-		-- Show function signature when you type
-		"ray-x/lsp_signature.nvim",
-		event = "VeryLazy",
-		opts = {},
-		config = function(_, opts)
-			require("lsp_signature").setup(opts)
-		end,
-	},
-	{
 		"pappasam/papercolor-theme-slim",
 		config = function()
 			vim.cmd([[colorscheme PaperColorSlim]])
@@ -742,16 +733,6 @@ require("lazy").setup({
 					map("n", "<leader>lf", function()
 						vim.lsp.buf.format({ async = true })
 					end)
-
-					-- Set up lsp_signature
-					require("lsp_signature").on_attach({
-						doc_lines = 0,
-						hint_enable = false,
-						zindex = 50, -- signature behind completion items
-						handler_opts = {
-							border = "none",
-						},
-					}, bufnr)
 				end,
 			})
 
