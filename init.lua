@@ -432,7 +432,16 @@ function AutoTheme()
 				return
 			end
 			if events.change then
-				dofile(file)
+				-- Ignore early writes until plugins are loaded so theme files cannot request package colorschemes before vim.pack adds them.
+				if not vim.g.theme_reload_enabled then
+					return
+				end
+
+				-- Load theme changes defensively so a bad theme edit reports an error without breaking startup.
+				local ok, err_msg = pcall(dofile, file)
+				if not ok then
+					vim.notify("Error loading theme file: " .. err_msg, vim.log.levels.ERROR)
+				end
 			end
 		end)
 	)
@@ -450,425 +459,424 @@ AutoTheme()
 -------------
 -- Plugins --
 -------------
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
-	vim.fn.system({
-		"git",
-		"clone",
-		"--filter=blob:none",
-		"https://github.com/folke/lazy.nvim.git",
-		"--branch=stable", -- latest stable release
-		lazypath,
-	})
-end
-vim.opt.rtp:prepend(lazypath)
-
-require("lazy").setup({
-	"mechatroner/rainbow_csv",
-	"junegunn/vim-slash", -- Automatically remove search selection
+local plugins = {
+	{ src = "https://github.com/mechatroner/rainbow_csv" },
+	{ src = "https://github.com/junegunn/vim-slash" }, -- Automatically remove search selection.
+	{ src = "https://github.com/pappasam/papercolor-theme-slim" },
+	{ src = "https://github.com/dhruvasagar/vim-table-mode" },
+	{ src = "https://github.com/saecki/crates.nvim" },
+	{ src = "https://github.com/stevearc/oil.nvim" },
+	{ src = "https://github.com/stevearc/conform.nvim" },
 	{
-		"pappasam/papercolor-theme-slim",
-		config = function()
-			vim.cmd([[colorscheme PaperColorSlim]])
-		end,
-	},
-	{
-		-- Tables
-		"dhruvasagar/vim-table-mode",
-		config = function()
-			vim.g.table_mode_corner = "|" -- markdown-compatible corners
-		end,
-	},
-	{
-		"saecki/crates.nvim",
-		event = { "BufRead Cargo.toml" },
-		config = function()
-			require("crates").setup()
-		end,
-	},
-	{
-		"stevearc/oil.nvim",
-		config = function()
-			require("oil").setup({
-				view_options = {
-					show_hidden = true,
-				},
-			})
-			vim.keymap.set("n", "<leader>d", ":Oil --preview<cr>", { silent = true })
-		end,
-	},
-	{
-		-- Formatters
-		"stevearc/conform.nvim",
-		config = function()
-			require("conform").setup({
-				formatters_by_ft = {
-					css = { "biome" },
-					html = { "global_prettier" },
-					javascript = { "biome", "biome-organize-imports" },
-					json = { "biome" },
-					jsonc = { "biome" },
-					json5 = { "global_prettier" },
-					lua = { "stylua" },
-					markdown = function(bufnr)
-						-- Skip injected formatting when markdown contains rust,ignore fenced blocks so Conform does not modify or drop ignored Rust examples.
-						for _, line in ipairs(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)) do
-							if line:match("^```%s*rust%s*,%s*ignore[%w_,%-]*%s*$") then
-								return { "markdown_prettier" }
-							end
-						end
-						return { "markdown_prettier", "injected" }
-					end,
-					python = { "ruff_format", "ruff_organize_imports" },
-					-- rust `injected` breaks Maud templates
-					-- rust = { "rustfmt_nightly", "injected" },
-					rust = { "rustfmt_nightly" },
-					sh = { "shfmt" },
-					-- sql = { "sleek" },
-					toml = { "taplo" },
-					vue = { "global_prettier" },
-					yaml = { "global_prettier" },
-				},
-				formatters = {
-					global_prettier = {
-						command = "/usr/bin/nodejs",
-						args = { "/usr/local/bin/prettier", "--stdin-filepath", "$FILENAME" },
-						stdin = true,
-					},
-					taplo = {
-						-- Mirror the buffer's effective indent settings so TOML format-on-save keeps following Neovim's .editorconfig values.
-						args = function(_, ctx)
-							-- Fall back to tabstop when shiftwidth is zero so Taplo still receives a concrete indentation width.
-							local indent_width = ctx.shiftwidth > 0 and ctx.shiftwidth or vim.bo[ctx.buf].tabstop
-							-- Build Taplo's indent string from the current buffer options so tabs and spaces both stay in sync with .editorconfig.
-							local indent_string = vim.bo[ctx.buf].expandtab and string.rep(" ", indent_width) or "\t"
-							return {
-								"format",
-								"--stdin-filepath",
-								ctx.filename,
-								"--option",
-								"indent_string=" .. indent_string,
-								"-",
-							}
-						end,
-						stdin = true,
-					},
-					rustfmt_nightly = {
-						-- Run rustfmt from nightly and enable pipefail so markdown code fences stay unchanged when rustfmt rejects a snippet.
-						command = "sh",
-						args = { "-o", "pipefail", "-c", "rustup run nightly rustfmt --emit stdout | dx fmt -f -" },
-						stdin = true,
-					},
-					markdown_prettier = {
-						command = "/usr/bin/nodejs",
-						args = {
-							"/usr/local/bin/prettier",
-							-- Bypass .gitignore/.prettierignore path filtering so Markdown files still autoformat even when gitignored.
-							"--ignore-path",
-							"/dev/null",
-							"--print-width",
-							"80",
-							"--prose-wrap",
-							"always",
-							"--stdin-filepath",
-							"$FILENAME",
-						},
-						stdin = true,
-					},
-					-- sleek = {
-					-- 	command = "sleek",
-					-- 	stdin = true,
-					-- },
-				},
-				format_on_save = {
-					timeout_ms = 500,
-					lsp_fallback = true,
-				},
-			})
-
-			-- Configure injected language formatting
-			require("conform").formatters.injected = {
-				options = {
-					ignore_errors = true,
-					lang_to_formatters = {
-						bash = { "shfmt" },
-						css = { "biome" },
-						html = { "global_prettier" },
-						javascript = { "biome", "biome-organize-imports" },
-						json = { "biome" },
-						json5 = { "global_prettier" },
-						lua = { "stylua" },
-						python = { "ruff_format", "ruff_organize_imports" },
-						rust = { "rustfmt_nightly" },
-						sh = { "shfmt" },
-						-- sql = { "sleek" },
-						toml = { "taplo" },
-						yaml = { "global_prettier" },
-					},
-				},
-			}
-		end,
-	},
-	{
-		"nvim-treesitter/nvim-treesitter",
 		-- Use the active branch because the frozen master branch crashes on Markdown highlighting in Nvim 0.12.
-		branch = "main",
-		-- Load at startup because nvim-treesitter's main branch does not support lazy-loading.
-		lazy = false,
-		build = ":TSUpdate",
-		config = function()
-			local treesitter = require("nvim-treesitter")
-
-			-- Install parsers into Neovim's site directory so parser binaries are runtime data instead of files inside the plugin checkout.
-			treesitter.setup({
-				install_dir = vim.fn.stdpath("data") .. "/site",
-			})
-
-			-- Enable native Nvim Tree-sitter highlighting for filetypes whose parsers are managed by nvim-treesitter or bundled with Nvim.
-			vim.api.nvim_create_autocmd("FileType", {
-				pattern = {
-					"css",
-					"html",
-					"javascript",
-					"json",
-					"json5",
-					"jsonc",
-					"lua",
-					"markdown",
-					"python",
-					"query",
-					"rust",
-					"scss",
-					"sh",
-					"sql",
-					"svelte",
-					"toml",
-					"typescript",
-					"vue",
-					"yaml",
-				},
-				callback = function()
-					-- Skip buffers whose parser is not installed yet so opening files stays error-free until :TSInstall/:TSUpdate provides it.
-					if not pcall(vim.treesitter.start) then
-						return
-					end
-
-					-- Preserve the previous Tree-sitter indentation behavior using the new nvim-treesitter indentation entry point.
-					vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-				end,
-			})
-		end,
+		src = "https://github.com/nvim-treesitter/nvim-treesitter",
+		version = "main",
 	},
-	{
-		"ibhagwan/fzf-lua",
-		config = function()
-			local fzf_lua = require("fzf-lua")
-			local actions = require("fzf-lua.actions")
+	{ src = "https://github.com/ibhagwan/fzf-lua" },
+	{ src = "https://github.com/j-hui/fidget.nvim" },
+	{ src = "https://github.com/nativerv/cyrillic.nvim" },
+	{ src = "https://github.com/mason-org/mason.nvim" },
+}
 
-			fzf_lua.setup({
-				fzf_bin = "sk", -- use skim instead of fzf
-				actions = {
-					files = {
-						true, -- inherit default bindings
-						["enter"] = actions.file_tabedit, -- open in a tab on Enter
-					},
-				},
-				defaults = {
-					file_icons = false,
-				},
-			})
+-- Respect --noplugin by skipping package installation, loading, and plugin-specific setup when plugin loading is disabled.
+local plugin_loading_enabled = vim.o.loadplugins
 
-			vim.keymap.set("n", "<leader>f", function()
-				fzf_lua.files()
-			end, { silent = true, desc = "Find Files" })
+-- Keep event-loaded packages out of the eager vim.pack loader so their startup cost stays deferred.
+local deferred_plugins = {
+	["crates.nvim"] = true,
+	["cyrillic.nvim"] = true,
+}
 
-			vim.keymap.set("n", "<leader>n", function()
-				fzf_lua.files({ cwd = NOTES_ROOT })
-			end, { silent = true, desc = "Find Notes" })
-
-			vim.keymap.set("n", "<leader>g", function()
-				fzf_lua.live_grep()
-			end, { silent = true, desc = "Live Grep" })
-		end,
-	},
-	{
-		-- Native LSP configuration (Neovim 0.11+)
-		-- LSP server configs are loaded from ~/.config/nvim/lsp/*.lua files
-		name = "native-lsp",
-		dir = vim.fn.stdpath("config"),
-		config = function()
-			-- Configure diagnostics
-			vim.diagnostic.config({
-				virtual_text = true,
-				signs = true,
-				update_in_insert = true,
-			})
-
-			-- Set up LspAttach autocommand for keybindings
-			vim.api.nvim_create_autocmd("LspAttach", {
-				group = vim.api.nvim_create_augroup("UserLspConfig", {}),
-				callback = function(ev)
-					local bufnr = ev.buf
-
-					local function map(mode, lhs, rhs, opts)
-						opts = opts or {}
-						opts.buffer = bufnr
-						opts.noremap = true
-						opts.silent = true
-						vim.keymap.set(mode, lhs, rhs, opts)
-					end
-
-					-- LSP keybindings
-					map("n", "gD", vim.lsp.buf.declaration)
-					map("n", "gd", vim.lsp.buf.definition)
-					map("n", "gi", vim.lsp.buf.implementation)
-					map("n", "<C-k>", vim.lsp.buf.signature_help)
-					map("n", "<leader>D", vim.lsp.buf.type_definition)
-					map("n", "<leader>r", vim.lsp.buf.rename)
-					map("n", "<leader>a", vim.lsp.buf.code_action)
-					map("n", "gr", vim.lsp.buf.references)
-					map("n", "<leader>e", vim.diagnostic.open_float)
-					map("n", "<leader>q", vim.diagnostic.setloclist)
-					-- Use <leader>lf for LSP formatting to avoid clashing with file finder.
-					map("n", "<leader>lf", function()
-						vim.lsp.buf.format({ async = true })
-					end)
-				end,
-			})
-
-			-- Enable LSP servers using native configuration
-			local servers = {
-				"bashls",
-				"biome",
-				"denols",
-				"lua_ls",
-				"marksman",
-				"ruff",
-				"rust_analyzer",
-				"typos_lsp",
-				"vuels",
-				-- "harper_ls",
-			}
-
-			for _, server in ipairs(servers) do
-				vim.lsp.enable(server)
-			end
-		end,
-	},
-	{
-		-- Installer for LSP servers, linters, etc.
-		"mason-org/mason.nvim",
-		enabled = function()
-			-- Skip loading the installer in headless sessions so automated checks do not run Mason health or registry jobs.
-			return #vim.api.nvim_list_uis() > 0
-		end,
-		build = ":MasonUpdate",
-		config = function()
-			require("mason").setup()
-
-			local registry = require("mason-registry")
-
-			-- List of packages to ensure are installed
-			-- List of all packages: https://mason-registry.dev/registry/list
-			local ensure_installed = {
-				"lua-language-server",
-				"marksman",
-				"typos-lsp",
-			}
-
-			-- This function will install the packages in the list above
-			-- if they are not already installed.
-			local function ensure_packages_installed()
-				for _, pkg_name in ipairs(ensure_installed) do
-					local pkg = registry.get_package(pkg_name)
-					if not pkg:is_installed() then
-						-- Schedule the installation
-						pkg:install():on("after_success", function()
-							vim.notify(("Package '%s' installed successfully"):format(pkg_name), vim.log.levels.INFO)
-						end)
-					end
-				end
-			end
-
-			-- Skip Mason registry work in headless sessions so scripted checks do not start background installs.
-			if #vim.api.nvim_list_uis() == 0 then
+if plugin_loading_enabled then
+	vim.api.nvim_create_autocmd("PackChanged", {
+		callback = function(ev)
+			-- Recreate Lazy's build hooks for native packages so plugin installs and updates refresh their generated data.
+			local kind = ev.data and ev.data.kind or nil
+			local name = ev.data and ev.data.spec and ev.data.spec.name or nil
+			if kind ~= "install" and kind ~= "update" then
 				return
 			end
 
-			-- Refresh the registry before installing packages so interactive startup still self-heals without throwing in restricted headless runs.
-			registry.refresh(function(success)
-				-- Skip automatic installs when the registry refresh fails because package metadata may be unavailable.
-				if not success then
-					return
+			if name == "nvim-treesitter" then
+				vim.schedule(function()
+					-- Run nvim-treesitter's parser update after package changes so managed parsers stay compatible with the plugin.
+					if pcall(vim.cmd, "packadd nvim-treesitter") then
+						pcall(vim.cmd, "TSUpdate")
+					end
+				end)
+			elseif name == "mason.nvim" and #vim.api.nvim_list_uis() > 0 then
+				vim.schedule(function()
+					-- Refresh Mason's registry after package changes so interactive installs use current package metadata.
+					if pcall(vim.cmd, "packadd mason.nvim") then
+						pcall(vim.cmd, "MasonUpdate")
+					end
+				end)
+			end
+		end,
+	})
+
+	-- Install missing plugins without an interactive prompt and load non-headless plugins immediately for the setup below.
+	vim.pack.add(plugins, {
+		confirm = false,
+		load = function(plugin)
+			-- Keep Mason managed by vim.pack but inactive in headless checks, matching the previous Lazy enabled guard.
+			if plugin.spec.name == "mason.nvim" and #vim.api.nvim_list_uis() == 0 then
+				return
+			end
+
+			-- Let explicit autocmds below load deferred packages only when their old Lazy events would have run.
+			if deferred_plugins[plugin.spec.name] then
+				return
+			end
+
+			-- Load every other native package immediately so explicit setup calls below can require plugin modules.
+			vim.cmd.packadd(plugin.spec.name)
+		end,
+	})
+
+	-- Load the configured colorscheme after vim.pack makes the theme package available.
+	vim.cmd([[colorscheme PaperColorSlim]])
+
+	-- Enable theme reloads after vim.pack loads colorscheme packages, then apply the current theme file once.
+	vim.g.theme_reload_enabled = true
+	local theme_file = vim.fn.expand("~/.config/nvim/theme.lua")
+	if vim.fn.filereadable(theme_file) == 1 then
+		-- Apply the user's persisted theme now that PaperColorSlim variants are on the runtime path.
+		local ok, err_msg = pcall(dofile, theme_file)
+		if not ok then
+			vim.notify("Error loading theme file: " .. err_msg, vim.log.levels.ERROR)
+		end
+	end
+
+	-- Configure table-mode's Markdown-compatible corner character before the plugin creates tables.
+	vim.g.table_mode_corner = "|"
+
+	-- Track crates.nvim setup so repeated Cargo.toml reads do not reconfigure the plugin.
+	local crates_configured = false
+	vim.api.nvim_create_autocmd("BufRead", {
+		pattern = "Cargo.toml",
+		callback = function()
+			-- Load and configure crates.nvim when a Cargo manifest opens, preserving the previous Lazy BufRead event.
+			if crates_configured then
+				return
+			end
+			crates_configured = true
+			vim.cmd.packadd("crates.nvim")
+			require("crates").setup()
+		end,
+	})
+
+	-- Configure Oil as the directory editor and expose the existing project drawer keymap.
+	require("oil").setup({
+		view_options = {
+			show_hidden = true,
+		},
+	})
+	vim.keymap.set("n", "<leader>d", ":Oil --preview<cr>", { silent = true })
+
+	-- Configure Conform as the external formatter orchestrator for project filetypes.
+	require("conform").setup({
+		formatters_by_ft = {
+			css = { "biome" },
+			html = { "global_prettier" },
+			javascript = { "biome", "biome-organize-imports" },
+			json = { "biome" },
+			jsonc = { "biome" },
+			json5 = { "global_prettier" },
+			lua = { "stylua" },
+			markdown = function(bufnr)
+				-- Skip injected formatting when markdown contains rust,ignore fenced blocks so Conform does not modify or drop ignored Rust examples.
+				for _, line in ipairs(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)) do
+					if line:match("^```%s*rust%s*,%s*ignore[%w_,%-]*%s*$") then
+						return { "markdown_prettier" }
+					end
 				end
-				ensure_packages_installed()
-			end)
-		end,
-	},
-	{
-		--- LSP progress at the bottom-right
-		"j-hui/fidget.nvim",
-		config = function()
-			require("fidget").setup({
-				-- Route vim.notify() into Fidget so notifications and LSP progress share the same UI.
-				notification = {
-					override_vim_notify = true,
-					-- Anchor notifications at the top-right corner of the editor UI.
-					window = {
-						align = "top",
-						x_padding = 1,
-						y_padding = 1,
-					},
-					-- Stack newer notifications downward so they flow from the top edge.
-					view = {
-						stack_upwards = false,
-					},
+				return { "markdown_prettier", "injected" }
+			end,
+			python = { "ruff_format", "ruff_organize_imports" },
+			-- rust `injected` breaks Maud templates.
+			-- rust = { "rustfmt_nightly", "injected" },
+			rust = { "rustfmt_nightly" },
+			sh = { "shfmt" },
+			-- sql = { "sleek" },
+			toml = { "taplo" },
+			vue = { "global_prettier" },
+			yaml = { "global_prettier" },
+		},
+		formatters = {
+			global_prettier = {
+				command = "/usr/bin/nodejs",
+				args = { "/usr/local/bin/prettier", "--stdin-filepath", "$FILENAME" },
+				stdin = true,
+			},
+			taplo = {
+				-- Mirror the buffer's effective indent settings so TOML format-on-save keeps following Neovim's .editorconfig values.
+				args = function(_, ctx)
+					-- Fall back to tabstop when shiftwidth is zero so Taplo still receives a concrete indentation width.
+					local indent_width = ctx.shiftwidth > 0 and ctx.shiftwidth or vim.bo[ctx.buf].tabstop
+					-- Build Taplo's indent string from the current buffer options so tabs and spaces both stay in sync with .editorconfig.
+					local indent_string = vim.bo[ctx.buf].expandtab and string.rep(" ", indent_width) or "\t"
+					return {
+						"format",
+						"--stdin-filepath",
+						ctx.filename,
+						"--option",
+						"indent_string=" .. indent_string,
+						"-",
+					}
+				end,
+				stdin = true,
+			},
+			rustfmt_nightly = {
+				-- Run rustfmt from nightly and enable pipefail so markdown code fences stay unchanged when rustfmt rejects a snippet.
+				command = "sh",
+				args = { "-o", "pipefail", "-c", "rustup run nightly rustfmt --emit stdout | dx fmt -f -" },
+				stdin = true,
+			},
+			markdown_prettier = {
+				command = "/usr/bin/nodejs",
+				args = {
+					"/usr/local/bin/prettier",
+					-- Bypass .gitignore/.prettierignore path filtering so Markdown files still autoformat even when gitignored.
+					"--ignore-path",
+					"/dev/null",
+					"--print-width",
+					"80",
+					"--prose-wrap",
+					"always",
+					"--stdin-filepath",
+					"$FILENAME",
 				},
-			})
+				stdin = true,
+			},
+			-- sleek = {
+			-- 	command = "sleek",
+			-- 	stdin = true,
+			-- },
+		},
+		format_on_save = {
+			timeout_ms = 500,
+			lsp_fallback = true,
+		},
+	})
+
+	-- Configure Conform's injected language formatter map so fenced and embedded code keeps the same formatting behavior.
+	require("conform").formatters.injected = {
+		options = {
+			ignore_errors = true,
+			lang_to_formatters = {
+				bash = { "shfmt" },
+				css = { "biome" },
+				html = { "global_prettier" },
+				javascript = { "biome", "biome-organize-imports" },
+				json = { "biome" },
+				json5 = { "global_prettier" },
+				lua = { "stylua" },
+				python = { "ruff_format", "ruff_organize_imports" },
+				rust = { "rustfmt_nightly" },
+				sh = { "shfmt" },
+				-- sql = { "sleek" },
+				toml = { "taplo" },
+				yaml = { "global_prettier" },
+			},
+		},
+	}
+
+	local treesitter = require("nvim-treesitter")
+
+	-- Install parsers into Neovim's site directory so parser binaries are runtime data instead of files inside the plugin checkout.
+	treesitter.setup({
+		install_dir = vim.fn.stdpath("data") .. "/site",
+	})
+
+	-- Enable native Nvim Tree-sitter highlighting for filetypes whose parsers are managed by nvim-treesitter or bundled with Nvim.
+	vim.api.nvim_create_autocmd("FileType", {
+		pattern = {
+			"css",
+			"html",
+			"javascript",
+			"json",
+			"json5",
+			"jsonc",
+			"lua",
+			"markdown",
+			"python",
+			"query",
+			"rust",
+			"scss",
+			"sh",
+			"sql",
+			"svelte",
+			"toml",
+			"typescript",
+			"vue",
+			"yaml",
+		},
+		callback = function()
+			-- Skip buffers whose parser is not installed yet so opening files stays error-free until :TSInstall/:TSUpdate provides it.
+			if not pcall(vim.treesitter.start) then
+				return
+			end
+
+			-- Preserve the previous Tree-sitter indentation behavior using the new nvim-treesitter indentation entry point.
+			vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
 		end,
-	},
-	-- {
-	-- 	--- Replace in multiple files, use `:Spectre` command
-	-- 	"nvim-pack/nvim-spectre",
-	-- 	dependencies = {
-	-- 		"nvim-lua/plenary.nvim",
-	-- 	},
-	-- },
-	{
-		"nativerv/cyrillic.nvim",
-		event = { "VeryLazy" },
-		config = function()
+	})
+
+	local fzf_lua = require("fzf-lua")
+	local actions = require("fzf-lua.actions")
+
+	-- Configure fzf-lua to keep skim-backed file and grep pickers with tab-opening file actions.
+	fzf_lua.setup({
+		fzf_bin = "sk", -- use skim instead of fzf
+		actions = {
+			files = {
+				true, -- inherit default bindings
+				["enter"] = actions.file_tabedit, -- open in a tab on Enter
+			},
+		},
+		defaults = {
+			file_icons = false,
+		},
+	})
+
+	-- Map the main file finder to fzf-lua's files picker.
+	vim.keymap.set("n", "<leader>f", function()
+		fzf_lua.files()
+	end, { silent = true, desc = "Find Files" })
+
+	-- Map the notes finder to fzf-lua with the notes directory as its working tree.
+	vim.keymap.set("n", "<leader>n", function()
+		fzf_lua.files({ cwd = NOTES_ROOT })
+	end, { silent = true, desc = "Find Notes" })
+
+	-- Map live grep to fzf-lua's project text search picker.
+	vim.keymap.set("n", "<leader>g", function()
+		fzf_lua.live_grep()
+	end, { silent = true, desc = "Live Grep" })
+
+	-- Keep Fidget as the notification and LSP progress UI because native progress is not visible with this minimal statusline setup.
+	require("fidget").setup({
+		notification = {
+			override_vim_notify = true,
+			-- Anchor notifications at the top-right corner of the editor UI.
+			window = {
+				align = "top",
+				x_padding = 1,
+				y_padding = 1,
+			},
+			-- Stack newer notifications downward so they flow from the top edge.
+			view = {
+				stack_upwards = false,
+			},
+		},
+	})
+
+	-- Defer Cyrillic keyboard helpers until after startup so the vim.pack migration keeps Lazy's VeryLazy timing.
+	vim.api.nvim_create_autocmd("VimEnter", {
+		once = true,
+		callback = function()
+			-- Load Cyrillic keyboard helpers after startup to preserve Lazy's deferred VeryLazy timing.
+			vim.cmd.packadd("cyrillic.nvim")
 			require("cyrillic").setup({
 				no_cyrillic_abbrev = false, -- default
 			})
 		end,
-	},
-	-- {
-	-- 	"cargo-limit/cargo-limit",
-	-- 	build = "cargo install --locked cargo-limit nvim-send",
-	-- },
+	})
 
-	-- {
-	-- 	"mrxiaozhuox/dioxus.nvim",
-	-- 	opts = {
-	-- 		format = {
-	-- 			-- split_line_attributes = true,
-	-- 		},
-	-- 	},
-	-- 	ft = "rust",
-	-- },
+	-- Configure Mason only for interactive sessions so headless checks do not start registry refreshes or installs.
+	if #vim.api.nvim_list_uis() > 0 then
+		require("mason").setup()
 
-	-- {
-	-- 	"rayliwell/tree-sitter-rstml",
-	-- 	dependencies = { "nvim-treesitter" },
-	-- 	build = ":TSUpdate",
-	-- 	config = function()
-	-- 		require("tree-sitter-rstml").setup()
-	-- 	end,
-	-- },
-}, {
-	rocks = {
-		-- Disable LuaRocks support because this config does not use rock-based plugins and Lazy health otherwise reports missing hererocks.
-		enabled = false,
-	},
+		local registry = require("mason-registry")
+
+		-- List of packages to ensure are installed.
+		-- List of all packages: https://mason-registry.dev/registry/list
+		local ensure_installed = {
+			"lua-language-server",
+			"marksman",
+			"typos-lsp",
+		}
+
+		local function ensure_packages_installed()
+			-- Install configured Mason packages when missing so LSP dependencies self-heal during interactive startup.
+			for _, pkg_name in ipairs(ensure_installed) do
+				local pkg = registry.get_package(pkg_name)
+				if not pkg:is_installed() then
+					-- Schedule the installation so startup is not blocked by Mason package downloads.
+					pkg:install():on("after_success", function()
+						vim.notify(("Package '%s' installed successfully"):format(pkg_name), vim.log.levels.INFO)
+					end)
+				end
+			end
+		end
+
+		-- Refresh the registry before installing packages so interactive startup still self-heals without throwing in restricted headless runs.
+		registry.refresh(function(success)
+			-- Skip automatic installs when the registry refresh fails because package metadata may be unavailable.
+			if not success then
+				return
+			end
+			ensure_packages_installed()
+		end)
+	end
+end
+
+-- Native LSP configuration uses ~/.config/nvim/lsp/*.lua files and does not require a plugin wrapper.
+vim.diagnostic.config({
+	virtual_text = true,
+	signs = true,
+	update_in_insert = true,
 })
+
+-- Attach buffer-local LSP mappings whenever a native LSP client starts for a buffer.
+vim.api.nvim_create_autocmd("LspAttach", {
+	group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+	callback = function(ev)
+		local bufnr = ev.buf
+
+		local function map(mode, lhs, rhs, opts)
+			-- Apply a consistent buffer-local LSP mapping shape for every attached server.
+			opts = opts or {}
+			opts.buffer = bufnr
+			opts.noremap = true
+			opts.silent = true
+			vim.keymap.set(mode, lhs, rhs, opts)
+		end
+
+		-- LSP keybindings.
+		map("n", "gD", vim.lsp.buf.declaration)
+		map("n", "gd", vim.lsp.buf.definition)
+		map("n", "gi", vim.lsp.buf.implementation)
+		map("n", "<C-k>", vim.lsp.buf.signature_help)
+		map("n", "<leader>D", vim.lsp.buf.type_definition)
+		map("n", "<leader>r", vim.lsp.buf.rename)
+		map("n", "<leader>a", vim.lsp.buf.code_action)
+		map("n", "gr", vim.lsp.buf.references)
+		map("n", "<leader>e", vim.diagnostic.open_float)
+		map("n", "<leader>q", vim.diagnostic.setloclist)
+		-- Use <leader>lf for LSP formatting to avoid clashing with file finder.
+		map("n", "<leader>lf", function()
+			vim.lsp.buf.format({ async = true })
+		end)
+	end,
+})
+
+-- Enable LSP servers using native configuration files from the lsp/ directory.
+local servers = {
+	"bashls",
+	"biome",
+	"denols",
+	"lua_ls",
+	"marksman",
+	"ruff",
+	"rust_analyzer",
+	"typos_lsp",
+	"vuels",
+	-- "harper_ls",
+}
+
+for _, server in ipairs(servers) do
+	-- Start each configured server through Nvim's native LSP manager instead of an LSP config plugin.
+	vim.lsp.enable(server)
+end
