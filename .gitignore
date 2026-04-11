@@ -1,5 +1,7 @@
+/.codex
 /.nvimlog
 /.todo.md
 /lazy-lock.json
+/nvim.log
 /plugin
 /theme.lua
