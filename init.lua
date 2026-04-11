@@ -572,9 +572,9 @@ require("lazy").setup({
 						stdin = true,
 					},
 					rustfmt_nightly = {
-						-- Run rustfmt from nightly toolchain and pipe the result through dx fmt so dx postprocesses Rust code.
+						-- Run rustfmt from nightly and enable pipefail so markdown code fences stay unchanged when rustfmt rejects a snippet.
 						command = "sh",
-						args = { "-c", "rustup run nightly rustfmt --emit stdout | dx fmt -f -" },
+						args = { "-o", "pipefail", "-c", "rustup run nightly rustfmt --emit stdout | dx fmt -f -" },
 						stdin = true,
 					},
 					markdown_prettier = {
