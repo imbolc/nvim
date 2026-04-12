@@ -55,11 +55,11 @@ vim.opt.updatetime = 100
 vim.keymap.set("x", "<", "<gv", { silent = true })
 vim.keymap.set("x", ">", ">gv", { silent = true })
 
--- Autocompletion
+-- Let native autocomplete open completion menus while typing so this config does not need a custom TextChangedI trigger.
 vim.opt.completeopt = { "menuone", "noselect", "popup", "fuzzy" }
 vim.o.autocomplete = true
 
--- Enable built-in LSP completion on attach
+-- Enable built-in LSP completion on attach so native completion and manual omni-complete can use server results.
 vim.api.nvim_create_autocmd("LspAttach", {
 	callback = function(ev)
 		local client = vim.lsp.get_client_by_id(ev.data.client_id)
@@ -67,93 +67,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 			vim.lsp.completion.enable(true, client.id, ev.buf, {
 				autotrigger = true,
 			})
-			-- Remember that this buffer exposes LSP completion so insert-mode events can auto-pop the menu.
-			vim.api.nvim_buf_set_var(ev.buf, "has_lsp_completion", true)
 		end
-	end,
-})
-
-vim.api.nvim_create_autocmd("LspDetach", {
-	callback = function(ev)
-		-- Remove the marker only if no remaining client supports completion for this buffer.
-		for _, client in ipairs(vim.lsp.get_clients({ bufnr = ev.buf })) do
-			if client:supports_method("textDocument/completion") then
-				return
-			end
-		end
-		pcall(vim.api.nvim_buf_del_var, ev.buf, "has_lsp_completion")
-	end,
-})
-
--- Auto-trigger path completion
-vim.api.nvim_create_autocmd("TextChangedI", {
-	callback = function()
-		if vim.fn.pumvisible() == 1 then
-			return
-		end
-
-		-- Helper that extracts the path-like prefix under the cursor so we can offer directory-aware completions immediately after typing `/`.
-		local function extract_path_prefix()
-			local col = vim.fn.col(".") - 1
-			if col <= 0 then
-				return nil
-			end
-			local before = vim.fn.getline("."):sub(1, col)
-			local path = before:match("([%w%._~%-/]+)$")
-			if not path then
-				return nil
-			end
-			if path:find("/") or path:match("^~") or path:match("^%./") or path:match("^%.%./") then
-				return path
-			end
-			return nil
-		end
-
-		-- When we have a path prefix, ask Vim for file matches rooted at that prefix so `/` keeps listing directory entries.
-		local path_prefix = extract_path_prefix()
-		if path_prefix then
-			local startcol = vim.fn.col(".") - #path_prefix
-			local matches = vim.fn.getcompletion(path_prefix, "file")
-			if matches and #matches > 0 then
-				vim.fn.complete(startcol, matches)
-				return
-			end
-		end
-
-		-- Skip auto-completion if the buffer has no LSP completion provider.
-		if not vim.b.has_lsp_completion then
-			return
-		end
-
-		local col = vim.fn.col(".") - 1
-		if col <= 0 then
-			return
-		end
-
-		local line = vim.fn.getline(".")
-		local char = line:sub(col, col)
-		if not char or not char:match("[%w_]") then
-			return
-		end
-
-		local prefix = line:sub(1, col):match("[%w_]+$")
-		if not prefix or prefix == "" then
-			return
-		end
-
-		-- Queue the omnifunc trigger so the popup matches the freshly typed prefix without blocking input.
-		local bufnr = vim.api.nvim_get_current_buf()
-		vim.schedule(function()
-			if not vim.api.nvim_buf_is_valid(bufnr) or vim.api.nvim_get_current_buf() ~= bufnr then
-				return
-			end
-			if vim.fn.mode() ~= "i" or vim.fn.pumvisible() == 1 then
-				return
-			end
-			-- Feed <C-x><C-o> so Neovim's LSP omnifunc narrows the popup to the current prefix automatically.
-			local keys = vim.api.nvim_replace_termcodes("<C-x><C-o>", true, true, true)
-			vim.api.nvim_feedkeys(keys, "n", false)
-		end)
 	end,
 })
 
