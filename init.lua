@@ -57,7 +57,7 @@ vim.keymap.set("x", ">", ">gv", { silent = true })
 
 -- Let native autocomplete open completion menus while typing so this config does not need a custom TextChangedI trigger.
 vim.opt.completeopt = { "menuone", "noselect", "popup", "fuzzy" }
-vim.o.autocomplete = true
+vim.opt.autocomplete = true
 
 -- Enable built-in LSP completion on attach so native completion and manual omni-complete can use server results.
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -514,7 +514,7 @@ if plugin_loading_enabled then
 			-- rust = { "rustfmt_nightly", "injected" },
 			rust = { "rustfmt_nightly" },
 			sh = { "shfmt" },
-			-- sql = { "sleek" },
+			sql = { "sleek" },
 			toml = { "taplo" },
 			vue = { "global_prettier" },
 			yaml = { "global_prettier" },
