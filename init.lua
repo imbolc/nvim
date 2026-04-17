@@ -223,7 +223,13 @@ vim.api.nvim_create_autocmd("FileType", {
 	callback = function()
 		vim.bo.commentstring = "-- %s"
 		-- Use <leader>x for run commands to keep <leader>r for LSP rename.
-		vim.api.nvim_buf_set_keymap(0, "n", "<leader>x", ":w|!psql -a -f %<CR>", { noremap = true, silent = true })
+		vim.api.nvim_buf_set_keymap(
+			0,
+			"n",
+			"<leader>x",
+			':silent w | !db="sandbox_$$" && createdb "$db" && psql -v ON_ERROR_STOP=1 -d "$db" -f %:S; rc=$?; dropdb --force "$db"; exit "$rc"<CR>',
+			{ noremap = true, silent = true }
+		)
 	end,
 })
 vim.cmd([[au FileType lua map <buffer> <leader>x :w\| :source  %<cr>]])
@@ -565,10 +571,10 @@ if plugin_loading_enabled then
 				},
 				stdin = true,
 			},
-			-- sleek = {
-			-- 	command = "sleek",
-			-- 	stdin = true,
-			-- },
+			sleek = {
+				command = "sleek",
+				stdin = true,
+			},
 		},
 		format_on_save = {
 			timeout_ms = 500,
