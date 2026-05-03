@@ -660,6 +660,10 @@ if plugin_loading_enabled then
 		defaults = {
 			file_icons = false,
 		},
+		files = {
+			-- Let skim match pasted paths reliably, including slash-separated paths and long filenames.
+			fzf_opts = { ["--split-match"] = "/", ["--algo"] = "skim_v2" },
+		},
 	})
 
 	-- Map the main file finder to fzf-lua's files picker.
