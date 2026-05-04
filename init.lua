@@ -729,8 +729,8 @@ if plugin_loading_enabled then
 			file_icons = false,
 		},
 		files = {
-			-- Let skim match pasted paths reliably, including slash-separated paths and long filenames.
-			fzf_opts = { ["--split-match"] = "/", ["--algo"] = "skim_v2" },
+			-- Let skim match pasted paths reliably while preferring exact filenames over longer prefix matches.
+			fzf_opts = { ["--split-match"] = "/", ["--algo"] = "skim_v2", ["--tiebreak"] = "score,length,begin,end" },
 		},
 	})
 
