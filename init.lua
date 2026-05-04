@@ -56,8 +56,66 @@ vim.keymap.set("x", "<", "<gv", { silent = true })
 vim.keymap.set("x", ">", ">gv", { silent = true })
 
 -- Let native autocomplete open completion menus while typing so this config does not need a custom TextChangedI trigger.
-vim.opt.completeopt = { "menuone", "noselect", "popup", "fuzzy" }
+vim.opt.completeopt = { "menu", "menuone", "noselect", "popup", "fuzzy" }
 vim.opt.autocomplete = true
+
+-- Feed filesystem paths into native autocomplete because built-in file completion only runs after <C-x><C-f>.
+function FilePathComplete(findstart, base)
+	if findstart == 1 then
+		-- Start completion only inside slash/tilde path tokens so normal dot completion stays with LSP.
+		local line = vim.fn.getline(".")
+		local col = vim.fn.col(".") - 1
+		local before_cursor = line:sub(1, col)
+		local start = before_cursor:find("[^%s\"'`()%[%]{}<>]*[/~][^%s\"'`()%[%]{}<>]*$")
+		return start and start - 1 or -3
+	end
+
+	-- Split the typed path so suggestions scan one directory and replace the whole path token.
+	local dir_prefix, file_prefix = base:match("^(.*[/\\])([^/\\]*)$")
+	if not dir_prefix then
+		dir_prefix = "~/"
+		file_prefix = ""
+	end
+
+	-- Expand the typed directory prefix for scanning while keeping the inserted completion text as typed.
+	local scan_dir = vim.fn.expand(dir_prefix)
+	local ok, iterator = pcall(vim.fs.dir, scan_dir)
+	if not ok then
+		return { words = {}, refresh = "always" }
+	end
+
+	-- Return matching directory entries as completion items and mark them so Tab can navigate path popups.
+	local matches = {}
+	for name, type in iterator do
+		if vim.startswith(name, file_prefix) then
+			local is_dir = type == "directory"
+			local suffix = is_dir and "/" or ""
+			table.insert(matches, {
+				word = dir_prefix .. name .. suffix,
+				abbr = name .. suffix,
+				kind = is_dir and "d" or "f",
+				menu = "[path]",
+				user_data = "filepath",
+			})
+		end
+	end
+
+	-- Sort directories first so path traversal stays predictable in the completion menu.
+	table.sort(matches, function(a, b)
+		if a.kind ~= b.kind then
+			return a.kind == "d"
+		end
+		return a.word < b.word
+	end)
+
+	return { words = matches, refresh = "always" }
+end
+
+-- Add the path source once so re-sourcing init.lua does not duplicate completion work.
+local file_path_complete_source = "Fv:lua.FilePathComplete"
+if not vim.tbl_contains(vim.opt.complete:get(), file_path_complete_source) then
+	vim.opt.complete:append(file_path_complete_source)
+end
 
 -- Enable built-in LSP completion on attach so native completion and manual omni-complete can use server results.
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -73,24 +131,34 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 -- Smart Tab for completion: trigger/navigate or insert tab
 function InsertTabWrapper()
-	if vim.fn.pumvisible() == 1 then
+	local completion = vim.fn.complete_info({ "mode", "pum_visible", "items" })
+	local col = vim.fn.col(".") - 1
+	local line = vim.fn.getline(".")
+	local before_cursor = line:sub(1, col)
+
+	-- Detect path-source popups so Tab navigates them instead of restarting file completion.
+	local has_path_items = false
+	for _, item in ipairs(completion.items or {}) do
+		if item.user_data == "filepath" then
+			has_path_items = true
+			break
+		end
+	end
+
+	-- Prefer file completion for path-like tokens and select its first item so global `noselect` does not hide Tab's result.
+	local is_path_context = before_cursor:match("%S*[/.~]%S*$") ~= nil
+	if is_path_context and completion.mode ~= "files" and not has_path_items then
+		local close_popup = completion.pum_visible == 1 and "<C-e>" or ""
+		return vim.api.nvim_replace_termcodes(close_popup .. "<C-x><C-f><C-n>", true, true, true)
+	end
+
+	if completion.pum_visible == 1 then
 		return vim.api.nvim_replace_termcodes("<C-n>", true, true, true)
 	end
-	local col = vim.fn.col(".") - 1
-	if col == 0 or vim.fn.getline("."):sub(col, col):match("%s") then
+	if col == 0 or line:sub(col, col):match("%s") then
 		return vim.api.nvim_replace_termcodes("<Tab>", true, true, true)
 	else
-		-- Try file path completion first, then fallback to LSP omni completion
-		local line = vim.fn.getline(".")
-		local cursor_col = vim.fn.col(".")
-		local before_cursor = line:sub(1, cursor_col - 1)
-
-		-- Check if we're typing a path (contains / or . or ~)
-		if before_cursor:match("[/.~]") then
-			return vim.api.nvim_replace_termcodes("<C-x><C-f>", true, true, true)
-		else
-			return vim.api.nvim_replace_termcodes("<C-x><C-o>", true, true, true)
-		end
+		return vim.api.nvim_replace_termcodes("<C-x><C-o>", true, true, true)
 	end
 end
 
