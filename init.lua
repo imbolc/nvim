@@ -588,7 +588,7 @@ if plugin_loading_enabled then
 			-- rust = { "rustfmt_nightly", "injected" },
 			rust = { "rustfmt_nightly" },
 			sh = { "shfmt" },
-			sql = { "sleek" },
+			-- sql = { "sleek" },
 			toml = { "taplo" },
 			vue = { "global_prettier" },
 			yaml = { "global_prettier" },
@@ -639,10 +639,10 @@ if plugin_loading_enabled then
 				},
 				stdin = true,
 			},
-			sleek = {
-				command = "sleek",
-				stdin = true,
-			},
+			-- sleek = {
+			-- 	command = "sleek",
+			-- 	stdin = true,
+			-- },
 		},
 		format_on_save = {
 			timeout_ms = 500,
