@@ -25,14 +25,15 @@ cargo install --locked --quiet comrak # renderer
 cargo install --locked --quiet stylua # formatter
 
 # Treesitter
-sudo apt install -y libclang-dev                 # build dependency for tree-sitter-cli
-cargo install --locked --quiet tree-sitter-cli   # parser compiler used by nvim-treesitter
+sudo apt install -y libclang-dev               # build dependency for tree-sitter-cli
+cargo install --locked --quiet tree-sitter-cli # parser compiler used by nvim-treesitter
 
 # Toml
 cargo install --locked --quiet taplo-cli # formatter
 
 # Python
-pipx install ruff # linter, formatter and LSP
+pipx install ruff    # linter, formatter and LSP
+pipx install pyrefly # type checker
 
 # `fzf-lua`
 cargo install --locked --quiet bat fd-find ripgrep skim
