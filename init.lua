@@ -849,6 +849,7 @@ local servers = {
 	"denols",
 	"lua_ls",
 	"marksman",
+	"pyrefly",
 	"ruff",
 	"rust_analyzer",
 	"typos_lsp",
