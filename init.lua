@@ -645,7 +645,8 @@ if plugin_loading_enabled then
 			-- },
 		},
 		format_on_save = {
-			timeout_ms = 500,
+			-- Give slower Markdown Prettier runs enough time before Conform cancels format-on-save.
+			timeout_ms = 3000,
 			lsp_fallback = true,
 		},
 	})
