@@ -4,7 +4,9 @@ set -eux
 # CSS, JS
 sudo npm install -g prettier@latest yaml-unist-parser@latest # formatter
 sudo npm install -g @biomejs/biome@latest                    # formatter, LSP
-sudo npm install -g deno                                     # LSP with renaming capabilities
+
+sudo apt install cmake
+cargo install deno --locked
 
 # Vue
 sudo npm install -g vls@latest # LSP
@@ -33,7 +35,6 @@ cargo install --locked --quiet taplo-cli # formatter
 
 # Python
 pipx install ruff    # linter, formatter and LSP
-pipx install pyrefly # type checker
 
 # `fzf-lua`
 cargo install --locked --quiet bat fd-find ripgrep skim

@@ -25,7 +25,6 @@ Neovim 0.11 introduced native LSP configuration APIs that eliminate the need for
 | `rust_analyzer.lua` | rust-analyzer | Rust |
 | `bashls.lua` | bash-language-server | Bash, Shell |
 | `biome.lua` | Biome | JavaScript, TypeScript, JSON |
-| `pyrefly.lua` | Pyrefly | Python (type checking) |
 | `marksman.lua` | Marksman | Markdown |
 | `ruff.lua` | Ruff | Python (linting) |
 | `vuels.lua` | Vue Language Server | Vue.js |
