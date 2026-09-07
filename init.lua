@@ -574,14 +574,16 @@ if plugin_loading_enabled then
 			jsonc = { "biome" },
 			json5 = { "global_prettier" },
 			lua = { "stylua" },
+			-- Format Markdown with rumdl and keep Conform responsible for fenced code.
 			markdown = function(bufnr)
 				-- Skip injected formatting when markdown contains rust,ignore fenced blocks so Conform does not modify or drop ignored Rust examples.
 				for _, line in ipairs(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)) do
 					if line:match("^```%s*rust%s*,%s*ignore[%w_,%-]*%s*$") then
-						return { "markdown_prettier" }
+						return { "rumdl" }
 					end
 				end
-				return { "markdown_prettier", "injected" }
+				-- Format fenced code before prose reflow changes its line positions.
+				return { "injected", "rumdl" }
 			end,
 			python = { "ruff_format", "ruff_organize_imports" },
 			-- rust `injected` breaks Maud templates.
@@ -623,21 +625,9 @@ if plugin_loading_enabled then
 				args = { "-o", "pipefail", "-c", "rustup run nightly rustfmt --emit stdout | dx fmt -f -" },
 				stdin = true,
 			},
-			markdown_prettier = {
-				command = "/usr/bin/nodejs",
-				args = {
-					"/usr/local/bin/prettier",
-					-- Bypass .gitignore/.prettierignore path filtering so Markdown files still autoformat even when gitignored.
-					"--ignore-path",
-					"/dev/null",
-					"--print-width",
-					"80",
-					"--prose-wrap",
-					"always",
-					"--stdin-filepath",
-					"$FILENAME",
-				},
-				stdin = true,
+			rumdl = {
+				-- Emit only formatted Markdown and let rumdl resolve user or project settings for the buffer.
+				append_args = { "--silent", "--stdin-filename", "$FILENAME" },
 			},
 			-- sleek = {
 			-- 	command = "sleek",
@@ -645,7 +635,7 @@ if plugin_loading_enabled then
 			-- },
 		},
 		format_on_save = {
-			-- Give slower Markdown Prettier runs enough time before Conform cancels format-on-save.
+			-- Allow time for Markdown and injected code formatters to finish before saving.
 			timeout_ms = 3000,
 			lsp_fallback = true,
 		},

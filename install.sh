@@ -22,6 +22,7 @@ cargo install --locked --quiet harper-ls # LSP
 
 # Markdown
 cargo install --locked --quiet comrak # renderer
+cargo install --locked --quiet rumdl  # formatter, linter
 
 # Lua
 cargo install --locked --quiet stylua # formatter
@@ -34,7 +35,7 @@ cargo install --locked --quiet tree-sitter-cli # parser compiler used by nvim-tr
 cargo install --locked --quiet taplo-cli # formatter
 
 # Python
-pipx install ruff    # linter, formatter and LSP
+pipx install ruff # linter, formatter and LSP
 
 # `fzf-lua`
 cargo install --locked --quiet bat fd-find ripgrep skim

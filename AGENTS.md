@@ -1,3 +1,5 @@
+# Agents guideline
+
 It's a repo for a Neovim configuration.
 
 ## LSP
@@ -93,7 +95,7 @@ Transform tasks into verifiable goals:
 
 For multi-step tasks, state a brief plan:
 
-```
+```text
 1. [Step] → verify: [check]
 2. [Step] → verify: [check]
 3. [Step] → verify: [check]
