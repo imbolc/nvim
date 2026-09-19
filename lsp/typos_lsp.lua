@@ -27,9 +27,4 @@ return {
 		"package.json",
 		".git",
 	},
-	single_file_support = true,
-	settings = {
-		-- Typos LSP settings can be configured here
-		-- See: https://github.com/tekumara/typos-lsp#configuration
-	},
 }

@@ -48,12 +48,15 @@ return {
 		"package.json",
 		".git",
 	},
-	single_file_support = true, -- Enable for single files
 	settings = { -- Server-specific settings
 		-- Server configuration goes here
 	},
 }
 ```
+
+Standalone files are supported by default. Set `workspace_required = true` only
+for servers that require a project root. Omit `settings` when no server-specific
+settings are needed; Neovim defaults them to an empty table.
 
 ## Adding New LSP Servers
 

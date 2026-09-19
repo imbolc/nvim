@@ -12,9 +12,4 @@ return {
 		"pyrightconfig.json",
 		".git",
 	},
-	single_file_support = true,
-	settings = {
-		-- Server settings can be configured here if needed
-		-- See: https://github.com/astral-sh/ruff-lsp#settings
-	},
 }

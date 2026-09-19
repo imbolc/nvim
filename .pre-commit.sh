@@ -29,6 +29,9 @@ rumdl check . || { set +x && printf "Run:\nrumdl fmt .\n" && exit 1; }
 
 # Tests
 vim --appimage-extract-and-run --headless -u NONE -i NONE -l tests/open_todo.lua
+# Check native LSP defaults and both SQL injection string forms.
+vim --appimage-extract-and-run --headless -u NONE -i NONE -l tests/lsp_defaults.lua
+vim --appimage-extract-and-run --headless -u NONE -i NONE -l tests/sql_injections.lua
 
 # Health
 vim --appimage-extract-and-run --headless -c checkhealth -c quit

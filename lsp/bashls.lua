@@ -7,5 +7,4 @@ return {
 		".bash_profile",
 		"*.sh",
 	},
-	single_file_support = true,
 }
