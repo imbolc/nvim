@@ -324,12 +324,25 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 	end,
 })
 
---- Opens the first found TODO (or README) file in the current directory.
+--- Opens the centralized project TODO, or searches local TODO/README files outside ~/proj projects.
 ---
 --- @param in_split boolean  If true, open file in a vsplit; otherwise, open in current window.
---- @param or_readme boolean  If true, also consider README.md as a candidate file.
---- @param show_errors boolean  If true, notify user if no file is found.
+--- @param or_readme boolean  If true, also consider README.md outside ~/proj projects.
+--- @param show_errors boolean  If true, notify user if no file is found outside ~/proj projects.
 function OpenTodo(in_split, or_readme, show_errors)
+	-- Share one todo path across a project's subfolders, opening a new buffer when the file is missing.
+	local projects_dir = vim.fn.expand("~/proj/")
+	local project = vim.fn.getcwd():match("^" .. vim.pesc(projects_dir) .. "([^/]+)")
+	if project then
+		local filename = projects_dir .. "todo/" .. project .. ".md"
+		vim.cmd((in_split and "vsplit" or "edit") .. " " .. vim.fn.fnameescape(filename))
+		-- Seed missing todo files with a heading while preserving edits in an unsaved buffer.
+		if vim.fn.getftype(filename) == "" and not vim.bo.modified then
+			vim.api.nvim_buf_set_lines(0, 0, -1, false, { "# " .. project .. " todo" })
+		end
+		return
+	end
+
 	local possible_files = {
 		".todo",
 		".todo.txt",
