@@ -10,7 +10,6 @@ return {
 		"jsconfig.json",
 		"import_map.json",
 	},
-	single_file_support = true,
 	init_options = {
 		enable = true,
 		lint = true,

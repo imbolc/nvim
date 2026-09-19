@@ -10,7 +10,6 @@ return {
 		"vite.config.ts",
 		".git",
 	},
-	single_file_support = true,
 	init_options = {
 		config = {
 			css = {},

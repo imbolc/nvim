@@ -248,19 +248,8 @@ vim.opt.cmdheight = 0
 vim.cmd("autocmd RecordingEnter * set cmdheight=1")
 vim.cmd("autocmd RecordingLeave * set cmdheight=0")
 
--- Would it help with losing access to clipboard?
-vim.g.clipboard = {
-	name = "xclip",
-	copy = {
-		["+"] = "xclip -selection clipboard",
-		["*"] = "xclip -selection primary",
-	},
-	paste = {
-		["+"] = "xclip -selection clipboard -o",
-		["*"] = "xclip -selection primary -o",
-	},
-	cache_enabled = 1,
-}
+-- Use Neovim's xclip provider for clipboard and primary-selection registers.
+vim.g.clipboard = "xclip"
 
 -- Templates
 local templates_augroup = vim.api.nvim_create_augroup("templates", { clear = true })
@@ -542,16 +531,12 @@ if plugin_loading_enabled then
 	-- Configure table-mode's Markdown-compatible corner character before the plugin creates tables.
 	vim.g.table_mode_corner = "|"
 
-	-- Track crates.nvim setup so repeated Cargo.toml reads do not reconfigure the plugin.
-	local crates_configured = false
+	-- Configure crates.nvim only on the first Cargo.toml read.
 	vim.api.nvim_create_autocmd("BufRead", {
 		pattern = "Cargo.toml",
+		once = true,
 		callback = function()
 			-- Load and configure crates.nvim when a Cargo manifest opens, preserving the previous Lazy BufRead event.
-			if crates_configured then
-				return
-			end
-			crates_configured = true
 			vim.cmd.packadd("crates.nvim")
 			require("crates").setup()
 		end,
@@ -642,25 +627,10 @@ if plugin_loading_enabled then
 		},
 	})
 
-	-- Configure Conform's injected language formatter map so fenced and embedded code keeps the same formatting behavior.
+	-- Reuse formatters_by_ft for injected code while ignoring snippet formatting errors.
 	require("conform").formatters.injected = {
 		options = {
 			ignore_errors = true,
-			lang_to_formatters = {
-				bash = { "shfmt" },
-				css = { "biome" },
-				html = { "global_prettier" },
-				javascript = { "biome", "biome-organize-imports" },
-				json = { "biome" },
-				json5 = { "global_prettier" },
-				lua = { "stylua" },
-				python = { "ruff_format", "ruff_organize_imports" },
-				rust = { "rustfmt_nightly" },
-				sh = { "shfmt" },
-				-- sql = { "sleek" },
-				toml = { "taplo" },
-				yaml = { "global_prettier" },
-			},
 		},
 	}
 
