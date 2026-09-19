@@ -8,6 +8,7 @@ local test_home = vim.fn.tempname() .. "/home.[test]"
 local projects = test_home .. "/proj/"
 local cwd, probes, notifications
 local readable = { ["todo.md"] = true, ["README.md"] = true }
+local todo_exists = true
 vim.fn.expand = function(path)
 	return (path:gsub("^~", function()
 		return test_home
@@ -15,6 +16,10 @@ vim.fn.expand = function(path)
 end
 vim.fn.getcwd = function()
 	return cwd
+end
+-- Control directory availability without creating a real todo repository.
+vim.fn.isdirectory = function(path)
+	return path == projects .. "todo" and todo_exists and 1 or 0
 end
 vim.fn.filereadable = function(path)
 	probes = probes + 1
@@ -29,12 +34,13 @@ vim.notify = function(message, level)
 end
 
 -- Exercise real edit/split commands to catch escaping mistakes and unintended fallback buffers.
+-- An empty expected path denotes a scratch buffer; nil means no buffer should open.
 local function check(directory, expected, in_split, or_readme, show_errors)
 	vim.cmd("silent! only")
 	vim.cmd("enew")
 	cwd, probes, notifications = directory, 0, {}
 	OpenTodo(in_split, or_readme, show_errors)
-	local path = expected and vim.fn.fnamemodify(expected, ":p") or ""
+	local path = expected and expected ~= "" and vim.fn.fnamemodify(expected, ":p") or ""
 	assert(vim.api.nvim_buf_get_name(0) == path, "Unexpected todo path for " .. directory)
 	assert(#vim.api.nvim_list_wins() == (in_split and expected and 2 or 1), "Unexpected split")
 end
@@ -64,6 +70,31 @@ check(projects .. "existing/src", projects .. "todo/existing.md", true, false, t
 assert(
 	vim.deep_equal(vim.api.nvim_buf_get_lines(0, 0, -1, false), { "Existing project notes" }) and not vim.bo.modified
 )
+
+-- Missing-directory instructions stay visible and copyable in a disposable read-only scratch buffer.
+todo_exists = false
+check(projects .. "missing", "", true, false, true)
+assert(probes == 0 and #notifications == 0)
+assert(vim.fn.winlayout()[1] == "row", "Instructions did not open in a vertical split")
+assert(vim.bo.buftype == "nofile" and vim.bo.bufhidden == "wipe")
+assert(vim.bo.readonly and not vim.bo.modifiable and not vim.bo.swapfile and not vim.bo.buflisted)
+local scratch = vim.api.nvim_get_current_buf()
+local message = vim.api.nvim_buf_get_lines(scratch, 0, -1, false)
+assert(table.concat(message, "\n"):find("git clone git@github.com:imbolc/todo.git ~/proj/todo", 1, true))
+assert(not pcall(vim.api.nvim_buf_set_lines, scratch, 0, -1, false, { "Accidental edit" }))
+
+-- Startup uses the current window and discards the previous scratch buffer when it is hidden.
+check(projects .. "missing/src", "", false, true, false)
+assert(probes == 0 and #notifications == 0 and not vim.api.nvim_buf_is_valid(scratch))
+assert(vim.deep_equal(vim.api.nvim_buf_get_lines(0, 0, -1, false), message))
+assert(vim.bo.readonly and not vim.bo.modifiable)
+
+-- After cloning, opening a todo returns to a normal editable buffer with the project heading.
+todo_exists = true
+check(projects .. "missing", projects .. "todo/missing.md", false, false, true)
+assert(vim.bo.buftype == "" and vim.bo.modifiable and not vim.bo.readonly)
+assert(vim.api.nvim_get_current_line() == "# missing todo")
+todo_exists = false
 
 -- Outside projects, preserve TODO priority, optional README lookup, and error visibility.
 check(test_home .. "/outside", "todo.md", true, true, true)

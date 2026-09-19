@@ -334,6 +334,29 @@ function OpenTodo(in_split, or_readme, show_errors)
 	local projects_dir = vim.fn.expand("~/proj/")
 	local project = vim.fn.getcwd():match("^" .. vim.pesc(projects_dir) .. "([^/]+)")
 	if project then
+		-- Keep clone instructions visible and copyable in a read-only scratch buffer until the directory exists.
+		if vim.fn.isdirectory(projects_dir .. "todo") == 0 then
+			local bufnr = vim.api.nvim_create_buf(false, true)
+			vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {
+				"# Error: todo folder is missing",
+				"",
+				"`~/proj/todo` folder is missing. Clone it with:",
+				"",
+				"```sh",
+				"git clone git@github.com:imbolc/todo.git ~/proj/todo",
+				"```",
+			})
+			vim.bo[bufnr].bufhidden = "wipe"
+			vim.bo[bufnr].readonly = true
+			vim.bo[bufnr].modifiable = false
+			if in_split then
+				vim.cmd.vsplit()
+			end
+			vim.api.nvim_win_set_buf(0, bufnr)
+			-- Apply Markdown window settings to the displayed instructions.
+			vim.bo[bufnr].filetype = "markdown"
+			return
+		end
 		local filename = projects_dir .. "todo/" .. project .. ".md"
 		vim.cmd((in_split and "vsplit" or "edit") .. " " .. vim.fn.fnameescape(filename))
 		-- Seed missing todo files with a heading while preserving edits in an unsaved buffer.
