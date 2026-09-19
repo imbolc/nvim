@@ -1,0 +1,7 @@
+# Personal spell dictionaries contain explicitly accepted vocabulary.
+[files]
+extend-exclude = ["spell/**"]
+
+# Accept Neovim's command for opening a fresh buffer in the current window.
+[default.extend-identifiers]
+enew = "enew"
