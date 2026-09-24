@@ -204,7 +204,7 @@ vim.keymap.set("n", "<leader>yf", function()
 end, { silent = true })
 
 -- Configure a notes-only keymap that copies a GitHub link for the current note.
-local NOTES_ROOT = vim.fn.expand("~/Documents/notes")
+local NOTES_ROOT = vim.fn.expand("~/proj/notes")
 -- Use an autocmd to attach the mapping only for buffers inside the notes folder.
 local notes_link_augroup = vim.api.nvim_create_augroup("notes-link", { clear = true })
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
